@@ -1,11 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, Request, UseGuards, } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, Request } from '@nestjs/common';
 import { StudentResponseDto } from 'src/students/dto/student-response.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { CreateParentDto } from './dto/create-parent.dto';
+import { UserDto } from 'src/user/dto/user.dto';
 import { ParentResponseDto } from './dto/parent-response.dto';
 import { ParentToStudentDto } from './dto/parent-to-student.dto';
 import { ParentService } from './parent.service';
-import { UserDto } from 'src/user/dto/user.dto';
 
 @Controller('parents')
 export class ParentController {
@@ -17,13 +15,11 @@ export class ParentController {
   }
 
   @Get('me')
-  @UseGuards(JwtAuthGuard)
   async getMyProfile(@Request() req): Promise<ParentResponseDto> {
     return this.parentService.findByUserId(req.user.id);
   }
 
   @Get('me/children')
-  @UseGuards(JwtAuthGuard)
   async getMyChildren(@Request() req): Promise<StudentResponseDto[]> {
     const parent = await this.parentService.findByUserId(req.user.id);
     return this.parentService.getChildren(parent.id);
@@ -37,6 +33,11 @@ export class ParentController {
   @Get(':id/children')
   async getChildren(@Param('id') id: string): Promise<StudentResponseDto[]> {
     return this.parentService.getChildren(id);
+  }
+
+  @Get('by-user/:userId/children')
+  async getChildrenByUserId(@Param('userId') userId: string): Promise<StudentResponseDto[]> {
+    return this.parentService.getChildrenByUserId(userId);
   }
 
   @Post(':id/children')
@@ -56,7 +57,6 @@ export class ParentController {
   }
 
   @Post('me/children')
-  @UseGuards(JwtAuthGuard)
   async addChildToMe(
     @Request() req,
     @Body() parentToStudentDto: ParentToStudentDto,
@@ -66,7 +66,6 @@ export class ParentController {
   }
 
   @Delete('me/children/:studentId')
-  @UseGuards(JwtAuthGuard)
   async removeChildFromMe(
     @Request() req,
     @Param('studentId') studentId: string,

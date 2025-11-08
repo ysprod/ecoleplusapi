@@ -95,6 +95,30 @@ export class ParentService {
     return parent.students as unknown as StudentResponseDto[];
   }
 
+  async getChildrenByUserId(userId: string): Promise<StudentResponseDto[]> {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new NotFoundException('User not found');
+    }
+
+    const parent = await this.parentModel
+      .findOne({ user: userId })
+      .populate({
+        path: 'students',
+        populate: {
+          path: 'class',
+          select: 'name level',
+        },
+        options: { sort: { lastName: 1, firstName: 1 } },
+      })
+      .exec();
+
+    if (!parent) {
+      throw new NotFoundException('Parent not found for this user');
+    }
+
+    return parent.students as unknown as StudentResponseDto[];
+  }
+
   async addStudentToParent(
     parentId: string,
     studentId: string,

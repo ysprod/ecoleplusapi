@@ -1,8 +1,0 @@
-export declare class SubjectResponseDto {
-    id: string;
-    name: string;
-    code?: string;
-    description?: string;
-    createdAt?: Date;
-    updatedAt?: Date;
-}

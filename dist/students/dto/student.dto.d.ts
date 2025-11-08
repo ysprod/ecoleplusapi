@@ -1,0 +1,37 @@
+import { ClassDto } from '../../classes/dto/class.dto';
+export declare class StudentDto {
+    _id?: string;
+    firstName?: string;
+    lastName?: string;
+    birthDate?: string;
+    birthPlace?: string;
+    email?: string;
+    gender?: 'M' | 'F';
+    bloodGroup?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
+    parentContact?: string;
+    parentEmail?: string;
+    class?: ClassDto;
+    classLevel?: string;
+    photoUrl?: string;
+    healthNotes?: string;
+    healthIssues?: string;
+    forbiddenFoods?: string;
+    parents?: string[];
+    grades?: string[];
+    payments?: string[];
+    matricule?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    fullName?: string;
+    age?: number;
+    school?: string;
+    schoolName?: string;
+    status?: string;
+    tuitionPaid?: boolean;
+    address?: string;
+    parentName?: string;
+    parentPhone?: string;
+    classId?: string;
+    upcomingEvents?: string;
+    schoolId?: string;
+}

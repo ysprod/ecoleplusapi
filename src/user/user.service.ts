@@ -8,6 +8,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UserDto } from './dto/user.dto';
 import { TeacherService } from '../teacher/teacher.service';
+import { ParentService } from '../parent/parent.service';
 import { CreateTeacherDto } from '../teacher/dto/create-teacher.dto';
 import { Teacher } from 'src/teacher/schemas/teacher.schema';
 
@@ -17,6 +18,7 @@ export class UserService {
        @InjectModel(Teacher.name) private teacherModel: Model<Teacher>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @Inject(forwardRef(() => TeacherService)) private teacherService: TeacherService,
+    @Inject(forwardRef(() => ParentService)) private parentService: ParentService,
   ) { }
 
   private mapToResponseDto(user: UserDocument): UserResponseDto {
@@ -68,7 +70,7 @@ export class UserService {
     const savedUser = await createdUser.save();
     const usersaved =this.mapToResponseDto(savedUser);
     
-    // Si l'utilisateur a le rôle "staff", créer automatiquement un enregistrement Teacher
+  // Si l'utilisateur a le rôle "staff", créer automatiquement un enregistrement Teacher
     if (usersaved.profileType === 'staff') {
       try {
         const createTeacherDto: CreateTeacherDto = {
@@ -92,6 +94,16 @@ export class UserService {
       } catch (error) {
         // Log l'erreur mais ne pas faire échouer la création de l'utilisateur
         console.error('Failed to create teacher record for staff user:', error);
+      }
+    }
+    
+    // Si l'utilisateur a le rôle "parent", créer automatiquement un enregistrement Parent
+    if (usersaved.role === 'parent' || usersaved.profileType === 'parent') {
+      try {
+        await this.parentService.getOrCreateParent(usersaved.id);
+      } catch (error) {
+        // Ne pas bloquer la création de l'utilisateur
+        console.error('Failed to create parent record for parent user:', error);
       }
     }
     

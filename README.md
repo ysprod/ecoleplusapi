@@ -23,7 +23,9 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+API scolaire (ecoleplusapi) construite avec NestJS et Mongoose. Le projet inclut authentification JWT, gestion des étudiants, parents, enseignants, cantine, paiements, etc. Swagger est disponible sur `/api/docs`.
+
+![CI](https://github.com/ysprod/ecoleplusapi/actions/workflows/ci.yml/badge.svg)
 
 ## Project setup
 
@@ -57,33 +59,43 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-## Deployment
+## Déploiement sur Render
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Ce dépôt inclut `render.yaml` pour provisionner un Web Service Node.js.
 
-### Deploying to Render
+1. Crée le service Web sur Render à partir de ce repo GitHub.
+2. Build command: `npm install && npm run build`
+3. Start command: `npm run start:prod`
+4. Le port est injecté dans `PORT` (déjà géré dans `src/main.ts`).
+5. Health check: `/api/docs`.
+6. Ajoute les variables d'environnement ci-dessous.
 
-This repo includes a `render.yaml` that provisions a Web Service on Render.
+### Variables d'environnement
 
-1. Push your code to GitHub or GitLab.
-2. Create a new Web Service on Render and select your repository.
-3. Render auto-detects Node. Use these commands if asked:
-  - Build command: `npm install && npm run build`
-  - Start command: `npm run start:prod`
-4. Set the following environment variables in Render (Dashboard → your service → Environment):
-  - `NODE_ENV=production`
-  - `MONGODB_URI` (your MongoDB connection string)
-  - `MONGODB_DB` (database name, optional if included in the URI)
-  - `JWT_SECRET` (your JWT signing secret)
-  - `ALLOWED_ORIGINS` (comma-separated list; e.g. `https://your-frontend.vercel.app,https://ecoleplus.onrender.com`)
-  - `API_URL` (optional; public URL of this API for Swagger server listing)
-  - `RESEND_API_KEY` (if you use email sending)
-5. Deploy. Render sets `PORT` automatically; the app already listens on `process.env.PORT`.
-6. Health check path is `/api/docs` (Swagger UI).
+| Nom | Rôle | Exemple |
+|-----|------|---------|
+| PORT | Port interne fourni par Render | (automatique) |
+| MONGODB_URI | Chaîne de connexion MongoDB | mongodb+srv://user:pass@cluster.mongodb.net |
+| MONGODB_DB | Nom de la base | ecoleplus |
+| JWT_SECRET | Secret signature JWT | chaîne longue aléatoire |
+| ALLOWED_ORIGINS | Origines CORS autorisées | https://frontend.app,https://admin.app |
+| API_URL | URL publique de l'API (Swagger) | https://ecoleplusapi.onrender.com |
+| RESEND_API_KEY | Clé API pour emails (optionnel) | (clé) |
 
-Notes:
-- CORS is enabled and can be controlled with `ALLOWED_ORIGINS`.
-- Swagger is available at `/api/docs` after deployment.
+Fichier modèle disponible: `.env.example`.
+
+### Politique CORS
+`ALLOWED_ORIGINS` est parsé en liste. Assure-toi de mettre toutes les URLs (sans slash final) séparées par des virgules.
+
+### Nettoyage du dépôt
+`node_modules/` et `dist/` ne sont pas versionnés afin de réduire la taille et éviter les fichiers dérivés. La première réécriture de commit a permis d'enlever `node_modules` de l'historique.
+
+### Conseils post-push
+* Activer la protection de branche `main`.
+* Ajouter des revues obligatoires avant merge.
+* Surveiller la consommation MongoDB.
+* Éventuellement ajouter un cache Redis (sessions / rate limit).
+* Ajouter un job de tests (décommenter l'étape test dans `ci.yml`).
 
 ## Resources
 

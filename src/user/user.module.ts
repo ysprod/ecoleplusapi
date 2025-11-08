@@ -11,6 +11,7 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { TeacherModule } from '../teacher/teacher.module';
 import { Teacher, TeacherSchema } from 'src/teacher/schemas/teacher.schema';
+import { ParentModule } from '../parent/parent.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { Teacher, TeacherSchema } from 'src/teacher/schemas/teacher.schema';
       inject: [ConfigService],
     }),
     forwardRef(() => TeacherModule),
+    forwardRef(() => ParentModule),
   ],
   controllers: [UserController],
   providers: [UserService, AuthService, LocalStrategy, JwtStrategy],

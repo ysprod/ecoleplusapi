@@ -101,6 +101,81 @@ export class Student {
   @Prop()
   professionMere?: string;
 
+  @Prop()
+  address?: string;
+
+  @Prop()
+  city?: string;
+
+  @Prop()
+  postalCode?: string;
+
+  @Prop()
+  country?: string;
+
+  @Prop()
+  nationality?: string;
+
+  @Prop()
+  emergencyContact?: string;
+
+  @Prop()
+  emergencyContactPhone?: string;
+
+  @Prop()
+  emergencyContactRelation?: string;
+
+  @Prop()
+  previousSchool?: string;
+
+  @Prop()
+  enrollmentDate?: Date;
+
+  @Prop({ default: 'active' })
+  status?: string; // active, inactive, graduated, transferred, expelled
+
+  @Prop()
+  notes?: string;
+
+  @Prop()
+  allergies?: string;
+
+  @Prop()
+  medications?: string;
+
+  @Prop()
+  specialNeeds?: string;
+
+  @Prop()
+  religion?: string;
+
+  @Prop()
+  transportMode?: string; // bus, walk, car, bicycle
+
+  @Prop()
+  lunchOption?: string; // cantine, home, other
+
+  @Prop()
+  insuranceNumber?: string;
+
+  @Prop()
+  insuranceProvider?: string;
+
+  @Prop()
+  siblingIds?: string[]; // IDs des frères et sœurs dans l'école
+
+  @Prop()
+  studentPhoto?: string;
+
+  @Prop()
+  birthCertificateUrl?: string;
+
+  @Prop()
+  transferCertificateUrl?: string;
+
+  @Prop({ type: [String], default: [] })
+  documents?: string[]; // URLs de documents divers
+
   // Ajout explicite des champs de timestamps
   createdAt?: Date;
   updatedAt?: Date;

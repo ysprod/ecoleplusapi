@@ -1,5 +1,5 @@
 // src/student/dto/create-student.dto.ts
-import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsArray } from 'class-validator';
+import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsArray, IsBoolean, IsNumber } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Gender, BloodGroup } from '../schemas/student.schema';
 
@@ -243,4 +243,104 @@ export class CreateStudentDto {
   @IsArray()
   @IsOptional()
   documents?: string[];
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  emailPere?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  emailMere?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  quarter?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  academicYear?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  classId?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  classType?: string;
+
+  @ApiProperty({ required: false })
+  @IsNumber()
+  @IsOptional()
+  averageGrade?: number;
+
+  @ApiProperty({ required: false })
+  @IsNumber()
+  @IsOptional()
+  attendanceRate?: number;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  hasHealthIssues?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  medicalNotes?: string;
+
+  @ApiProperty({ required: false })
+  @IsBoolean()
+  @IsOptional()
+  hasTuteur?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  nomTuteur?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  prenomTuteur?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  telephoneTuteur?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  relationTuteur?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  emergencyRelation?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  parentName?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  parentEmail?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  parentPhone?: string;
+
+  @ApiProperty({ required: false })
+  @IsString()
+  @IsOptional()
+  parent?: string;
 }

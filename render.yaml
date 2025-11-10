@@ -22,4 +22,8 @@ services:
         sync: false
       - key: RESEND_API_KEY
         sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: API_URL
+        sync: false
     # Add other required secrets via Render dashboard

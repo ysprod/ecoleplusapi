@@ -6,7 +6,7 @@ import { Subject, SubjectSchema } from './schemas/subject.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Subject.name, schema: SubjectSchema }])
+    MongooseModule.forFeature([{ name: Subject.name, schema: SubjectSchema }]),
   ],
   controllers: [SubjectsController],
   providers: [SubjectsService],

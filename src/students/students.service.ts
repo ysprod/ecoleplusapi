@@ -24,7 +24,9 @@ export class StudentsService {
     private classService: ClassService,
   ) {}
 
-  private async mapToResponseDto(student: StudentDocument): Promise<StudentResponseDto> {
+  private async mapToResponseDto(
+    student: StudentDocument,
+  ): Promise<StudentResponseDto> {
     await student.populate([
       { path: 'class' },
       { path: 'parents' },
@@ -59,38 +61,48 @@ export class StudentsService {
     };
   }
 
-  async create(createStudentDto: CreateStudentDto): Promise<StudentResponseDto> {
-    const matricule = createStudentDto.matricule || `STU-${Date.now().toString().slice(-6)}`;
+  async create(
+    createStudentDto: CreateStudentDto,
+  ): Promise<StudentResponseDto> {
+    const matricule =
+      createStudentDto.matricule || `STU-${Date.now().toString().slice(-6)}`;
     const existingStudent = await this.studentModel.findOne({ matricule });
     if (existingStudent) {
       throw new ConflictException('Student with this matricule already exists');
     }
 
-    if (createStudentDto.class) {
-      await this.classService.findById(createStudentDto.class);
-    }
+    // if (createStudentDto.class) {
+    //   await this.classService.findById(createStudentDto.class);
+    // }
 
     const createdStudent = new this.studentModel({
       ...createStudentDto,
       matricule,
-      class: createStudentDto.class ? new Types.ObjectId(createStudentDto.class) : undefined,
+      class: createStudentDto.classId,
     });
 
     const savedStudent = await createdStudent.save();
-
-    if (createStudentDto.class) {
-      await this.classService.addStudent(
-        createStudentDto.class,
-        savedStudent._id.toString(),
-      );
-    }
+    await this.classService.addStudent(
+      createStudentDto.classId!,
+      savedStudent._id.toString(),
+    );
 
     return this.mapToResponseDto(savedStudent);
   }
 
-  async findAll(query: any = {}, skip = 0, limit = 20): Promise<StudentResponseDto[]> {
-    const students = await this.studentModel.find(query).skip(skip).limit(limit).exec();
-    return Promise.all(students.map(student => this.mapToResponseDto(student)));
+  async findAll(
+    query: any = {},
+    skip = 0,
+    limit = 20,
+  ): Promise<StudentResponseDto[]> {
+    const students = await this.studentModel
+      .find(query)
+      .skip(skip)
+      .limit(limit)
+      .exec();
+    return Promise.all(
+      students.map((student) => this.mapToResponseDto(student)),
+    );
   }
 
   async findById(id: string): Promise<StudentResponseDto> {
@@ -115,7 +127,10 @@ export class StudentsService {
     return this.mapToResponseDto(student);
   }
 
-  async update(id: string, updateStudentDto: UpdateStudentDto): Promise<StudentResponseDto> {
+  async update(
+    id: string,
+    updateStudentDto: UpdateStudentDto,
+  ): Promise<StudentResponseDto> {
     if (!Types.ObjectId.isValid(id)) {
       throw new NotFoundException('Student not found');
     }
@@ -125,26 +140,28 @@ export class StudentsService {
       throw new NotFoundException('Student not found');
     }
 
-    if (updateStudentDto.class && updateStudentDto.class !== student.class?.toString()) {
-      if (student.class) {
-        await this.classService.removeStudent(
-          student.class.toString(),
-          student._id.toString(),
-        );
-      }
-      await this.classService.addStudent(
-        updateStudentDto.class,
-        student._id.toString(),
-      );
-    }
+    // if (updateStudentDto.class && updateStudentDto.class !== student.class?.toString()) {
+    //   if (student.class) {
+    //     await this.classService.removeStudent(
+    //       student.class.toString(),
+    //       student._id.toString(),
+    //     );
+    //   }
+    //   await this.classService.addStudent(
+    //     updateStudentDto.class,
+    //     student._id.toString(),
+    //   );
+    // }
 
     if (updateStudentDto.matricule) {
       const existingStudent = await this.studentModel.findOne({
         matricule: updateStudentDto.matricule,
-        _id: { $ne: new Types.ObjectId(id) }
+        _id: { $ne: new Types.ObjectId(id) },
       });
       if (existingStudent) {
-        throw new BadRequestException('Un étudiant avec ce matricule existe déjà');
+        throw new BadRequestException(
+          'Un étudiant avec ce matricule existe déjà',
+        );
       }
     }
 
@@ -193,7 +210,9 @@ export class StudentsService {
       })
       .exec();
 
-    return Promise.all(students.map(student => this.mapToResponseDto(student)));
+    return Promise.all(
+      students.map((student) => this.mapToResponseDto(student)),
+    );
   }
 
   async getPaginatedStudents(
@@ -222,12 +241,20 @@ export class StudentsService {
         total,
         pages: Math.ceil(total / limit),
       },
-      students: await Promise.all(students.map(student => this.mapToResponseDto(student))),
+      students: await Promise.all(
+        students.map((student) => this.mapToResponseDto(student)),
+      ),
     };
   }
 
-  async addParent(studentId: string, parentId: string): Promise<StudentResponseDto> {
-    if (!Types.ObjectId.isValid(studentId) || !Types.ObjectId.isValid(parentId)) {
+  async addParent(
+    studentId: string,
+    parentId: string,
+  ): Promise<StudentResponseDto> {
+    if (
+      !Types.ObjectId.isValid(studentId) ||
+      !Types.ObjectId.isValid(parentId)
+    ) {
       throw new BadRequestException('ID invalide');
     }
 

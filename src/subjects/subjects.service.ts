@@ -1,10 +1,14 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Subject } from './schemas/subject.schema';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
- 
+
 @Injectable()
 export class SubjectsService {
   constructor(
@@ -17,7 +21,9 @@ export class SubjectsService {
       return await subject.save();
     } catch (error) {
       if (error.code === 11000) {
-        throw new ConflictException('Ce code de matière existe déjà pour cette année académique');
+        throw new ConflictException(
+          'Ce code de matière existe déjà pour cette année académique',
+        );
       }
       throw error;
     }
@@ -58,7 +64,10 @@ export class SubjectsService {
     return subject;
   }
 
-  async update(id: string, updateSubjectDto: UpdateSubjectDto): Promise<Subject> {
+  async update(
+    id: string,
+    updateSubjectDto: UpdateSubjectDto,
+  ): Promise<Subject> {
     const subject = await this.subjectModel
       .findByIdAndUpdate(id, updateSubjectDto, { new: true })
       .exec();

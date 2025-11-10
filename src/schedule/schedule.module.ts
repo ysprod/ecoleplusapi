@@ -6,7 +6,9 @@ import { ScheduleController } from './schedule.controller';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Schedule.name, schema: ScheduleSchema }]),
+    MongooseModule.forFeature([
+      { name: Schedule.name, schema: ScheduleSchema },
+    ]),
   ],
   providers: [ScheduleService],
   controllers: [ScheduleController],

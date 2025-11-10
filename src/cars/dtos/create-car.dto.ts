@@ -1,4 +1,13 @@
-import { IsString, IsNumber, IsBoolean, IsOptional, Min, Max, Length, IsNotEmpty } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsBoolean,
+  IsOptional,
+  Min,
+  Max,
+  Length,
+  IsNotEmpty,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class CreateCarDto {

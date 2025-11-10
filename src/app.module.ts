@@ -47,7 +47,8 @@ import { CantineModule } from './cantine/cantine.module';
     CarModule,
     GradeModule,
     ParentModule,
-    ClassModule, TeacherModule,
+    ClassModule,
+    TeacherModule,
     AcademicYearsModule,
     AuthModule,
     PaymentModule,
@@ -58,9 +59,9 @@ import { CantineModule } from './cantine/cantine.module';
     SupportModule,
     CartoModule,
     PermissionsModule,
-    CantineModule
+    CantineModule,
   ],
   controllers: [AppController],
   providers: [],
 })
-export class AppModule { }
+export class AppModule {}

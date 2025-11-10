@@ -5,11 +5,12 @@ import { ActivityController } from './activity.controller';
 import { Activity, ActivitySchema } from './entities/activity.entity';
 import { ActivityRepository } from './interfaces/activity.repository';
 import { ActivityService } from './services/activity.service';
- 
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Activity.name, schema: ActivitySchema }]),
+    MongooseModule.forFeature([
+      { name: Activity.name, schema: ActivitySchema },
+    ]),
   ],
   controllers: [ActivityController],
   providers: [ActivityService, ActivityRepository, ValidationService],

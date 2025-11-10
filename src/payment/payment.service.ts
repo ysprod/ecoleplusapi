@@ -20,14 +20,16 @@ export class PaymentService {
   }
 
   async findAll(filter: any = {}): Promise<Payment[]> {
-    return this.paymentModel.find(filter)
+    return this.paymentModel
+      .find(filter)
       .populate('student')
       .populate('parent')
       .exec();
   }
 
   async findById(id: string): Promise<Payment> {
-    const payment = await this.paymentModel.findById(id)
+    const payment = await this.paymentModel
+      .findById(id)
       .populate('student')
       .populate('parent')
       .exec();

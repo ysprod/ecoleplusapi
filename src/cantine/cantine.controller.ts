@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { CantineService } from './cantine.service';
 import { CantineCreateDto } from './dtos/CantineCreate.dto';
 import { CantineUpdateDto } from './dtos/CantineUpdateDto';
@@ -24,7 +33,7 @@ export class CantineController {
     const menus = await this.cantineService.getMenusBySchoolId(schoolId);
     return { data: menus };
   }
-  
+
   // @Get('menus')
   // async getMenusBySchool(@Query('schoolId') schoolId: string) {
   //   return this.cantineService.getMenusBySchoolId(schoolId);

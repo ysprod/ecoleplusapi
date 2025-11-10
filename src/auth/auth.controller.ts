@@ -1,4 +1,10 @@
-import { Controller, Post, Body, Res, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Res,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from 'src/user/dto/login.dto';
 
@@ -20,8 +26,8 @@ export class AuthController {
 
   @Post('google')
   async googleAuth(@Body() googleUser: { email: string; name: string }) {
-    let user = await this.authService.findOrCreateGoogleUser(googleUser);
+    const user = await this.authService.findOrCreateGoogleUser(googleUser);
     const accessToken = this.authService.generateJwt(user);
     return { accessToken, user };
   }
-} 
+}

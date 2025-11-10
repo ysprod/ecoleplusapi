@@ -18,10 +18,13 @@ export class ParentService {
   constructor(
     @InjectModel(Parent.name) private parentModel: Model<ParentDocument>,
     @Inject(forwardRef(() => UserService)) private userService: UserService,
-    @Inject(forwardRef(() => StudentsService)) private studentService: StudentsService,
+    @Inject(forwardRef(() => StudentsService))
+    private studentService: StudentsService,
   ) {}
 
-  private async mapToResponseDto(parent: ParentDocument): Promise<ParentResponseDto> {
+  private async mapToResponseDto(
+    parent: ParentDocument,
+  ): Promise<ParentResponseDto> {
     await parent.populate([
       { path: 'user' },
       { path: 'students' },
@@ -123,7 +126,10 @@ export class ParentService {
     parentId: string,
     studentId: string,
   ): Promise<ParentResponseDto> {
-    if (!Types.ObjectId.isValid(parentId) || !Types.ObjectId.isValid(studentId)) {
+    if (
+      !Types.ObjectId.isValid(parentId) ||
+      !Types.ObjectId.isValid(studentId)
+    ) {
       throw new NotFoundException('Parent or student not found');
     }
 
@@ -152,7 +158,10 @@ export class ParentService {
     parentId: string,
     studentId: string,
   ): Promise<ParentResponseDto> {
-    if (!Types.ObjectId.isValid(parentId) || !Types.ObjectId.isValid(studentId)) {
+    if (
+      !Types.ObjectId.isValid(parentId) ||
+      !Types.ObjectId.isValid(studentId)
+    ) {
       throw new NotFoundException('Parent or student not found');
     }
 
@@ -214,7 +223,10 @@ export class ParentService {
     }
   }
 
-  async getUserInfo(parentId: string, fields: string[] = ['email', 'firstName', 'lastName', 'role']): Promise<UserDto | null> {
+  async getUserInfo(
+    parentId: string,
+    fields: string[] = ['email', 'firstName', 'lastName', 'role'],
+  ): Promise<UserDto | null> {
     if (!Types.ObjectId.isValid(parentId)) {
       throw new NotFoundException('Parent not found');
     }

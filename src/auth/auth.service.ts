@@ -8,7 +8,7 @@ export class AuthService {
   constructor(
     @Inject(forwardRef(() => UserService)) private userService: UserService,
     private jwtService: JwtService,
-  ) { }
+  ) {}
 
   // async validateUserbcrypt(email: string, password: string) {
   //   const user = await this.userService.findByEmail(email);
@@ -38,8 +38,6 @@ export class AuthService {
       user,
     };
   }
-
-
 
   async validateJwtPayload(payload: any) {
     return this.userService.findOne(payload.sub);

@@ -1,9 +1,20 @@
-import { IsString, IsNotEmpty, IsNumber, IsBoolean, IsOptional, IsEnum, IsArray, Min, Max, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  IsBoolean,
+  IsOptional,
+  IsEnum,
+  IsArray,
+  Min,
+  Max,
+  MaxLength,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateSubjectDto {
- @ApiProperty({
+  @ApiProperty({
     description: 'Nom de la matière',
     example: 'Mathématiques',
     maxLength: 100,
@@ -25,7 +36,7 @@ export class CreateSubjectDto {
   code: string;
 
   @ApiProperty({
-    description: 'ID de l\'école',
+    description: "ID de l'école",
     example: '507f1f77bcf86cd799439011',
   })
   @IsString()
@@ -33,7 +44,7 @@ export class CreateSubjectDto {
   school: string;
 
   @ApiProperty({
-    description: 'ID de l\'année académique',
+    description: "ID de l'année académique",
     example: '507f1f77bcf86cd799439012',
   })
   @IsString()
@@ -49,7 +60,7 @@ export class CreateSubjectDto {
   department?: string;
 
   @ApiPropertyOptional({
-    description: 'ID de l\'enseignant',
+    description: "ID de l'enseignant",
     example: '507f1f77bcf86cd799439014',
   })
   @IsOptional()

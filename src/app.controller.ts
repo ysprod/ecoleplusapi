@@ -3,4 +3,4 @@ import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Root')
 @Controller()
-export class AppController { }
+export class AppController {}

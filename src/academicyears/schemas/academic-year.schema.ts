@@ -23,7 +23,10 @@ export class AcademicYear {
   @Prop({ default: false, index: true })
   isCurrent: boolean;
 
-  @Prop({ enum: ['planned', 'active', 'completed', 'cancelled'], default: 'planned' })
+  @Prop({
+    enum: ['planned', 'active', 'completed', 'cancelled'],
+    default: 'planned',
+  })
   status: string;
 
   @Prop({ maxlength: 500 })

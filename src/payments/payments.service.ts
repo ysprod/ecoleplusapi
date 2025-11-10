@@ -23,8 +23,13 @@ export class PaymentsService {
     return this.paymentModel.findById(id).populate('student parent').exec();
   }
 
-  async update(id: string, updatePaymentDto: UpdatePaymentDto): Promise<Payment | null> {
-    return this.paymentModel.findByIdAndUpdate(id, updatePaymentDto, { new: true }).exec();
+  async update(
+    id: string,
+    updatePaymentDto: UpdatePaymentDto,
+  ): Promise<Payment | null> {
+    return this.paymentModel
+      .findByIdAndUpdate(id, updatePaymentDto, { new: true })
+      .exec();
   }
 
   async remove(id: string): Promise<void> {

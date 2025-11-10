@@ -1,7 +1,14 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ClientSession, Model, Types } from 'mongoose';
-import { AcademicYear, AcademicYearDocument } from './schemas/academic-year.schema';
+import {
+  AcademicYear,
+  AcademicYearDocument,
+} from './schemas/academic-year.schema';
 import { SchoolService } from '../school/school.service';
 import { TransactionService } from '../shared/transaction.service';
 import { ValidationService } from '../shared/validation.service';
@@ -10,11 +17,15 @@ import { User } from 'src/user/schemas/user.schema';
 @Injectable()
 export class AcademicYearsService {
   constructor(
-    @InjectModel(AcademicYear.name) private academicYearModel: Model<AcademicYearDocument>,
+    @InjectModel(AcademicYear.name)
+    private academicYearModel: Model<AcademicYearDocument>,
     private readonly schoolService: SchoolService,
-  ) { }
+  ) {}
 
-  async create(createDto: Partial<AcademicYear>, session?: ClientSession): Promise<AcademicYearDocument> {
+  async create(
+    createDto: Partial<AcademicYear>,
+    session?: ClientSession,
+  ): Promise<AcademicYearDocument> {
     const created = new this.academicYearModel(createDto);
     return created.save({ session });
   }
@@ -37,7 +48,11 @@ export class AcademicYearsService {
     await this.academicYearModel.findByIdAndDelete(id).exec();
   }
 
-  async addSchoolToAcademicYear(academicYearId: string, schoolId: string, session?: ClientSession): Promise<void> {
+  async addSchoolToAcademicYear(
+    academicYearId: string,
+    schoolId: string,
+    session?: ClientSession,
+  ): Promise<void> {
     ValidationService.validateObjectId(academicYearId);
     ValidationService.validateObjectId(schoolId);
     await this.academicYearModel.findByIdAndUpdate(
@@ -47,7 +62,11 @@ export class AcademicYearsService {
     );
   }
 
-  async removeSchoolFromAcademicYear(academicYearId: string, schoolId: string, session?: ClientSession): Promise<void> {
+  async removeSchoolFromAcademicYear(
+    academicYearId: string,
+    schoolId: string,
+    session?: ClientSession,
+  ): Promise<void> {
     ValidationService.validateObjectId(academicYearId);
     ValidationService.validateObjectId(schoolId);
     await this.academicYearModel.findByIdAndUpdate(
@@ -57,9 +76,17 @@ export class AcademicYearsService {
     );
   }
 
-  async deactivateOtherCurrentYears(userId: string, currentYearId: string, session?: ClientSession): Promise<void> {
+  async deactivateOtherCurrentYears(
+    userId: string,
+    currentYearId: string,
+    session?: ClientSession,
+  ): Promise<void> {
     await this.academicYearModel.updateMany(
-      { user: new Types.ObjectId(userId), _id: { $ne: new Types.ObjectId(currentYearId) }, isCurrent: true },
+      {
+        user: new Types.ObjectId(userId),
+        _id: { $ne: new Types.ObjectId(currentYearId) },
+        isCurrent: true,
+      },
       { isCurrent: false },
       { session },
     );
@@ -75,7 +102,7 @@ export class AcademicYearsService {
     }
 
     const createdYear = await this.create(academicYearDto);
-    const createdYearId = (createdYear._id as unknown as Types.ObjectId).toString();
+    const createdYearId = (createdYear._id as Types.ObjectId).toString();
     await this.addSchoolToAcademicYear(createdYearId, schoolId);
     await this.schoolService.addAcademicYear(schoolId, createdYearId);
 
@@ -90,13 +117,20 @@ export class AcademicYearsService {
   }
 
   // Optimized composite flows aligned with requested pattern
-  async getAcademicYearsWithSchools(userid?: any): Promise<AcademicYearDocument[]> {
+  async getAcademicYearsWithSchools(
+    userid?: any,
+  ): Promise<AcademicYearDocument[]> {
     if (!userid || !Types.ObjectId.isValid(userid)) return [];
     const userObjectId = new Types.ObjectId(userid);
-    return this.academicYearModel.find({ user: userObjectId }).populate('schools').exec();
+    return this.academicYearModel
+      .find({ user: userObjectId })
+      .populate('schools')
+      .exec();
   }
 
-  async updateSchoolWithAcademicYear(data: { id: string } & Partial<AcademicYear>): Promise<AcademicYearDocument> {
+  async updateSchoolWithAcademicYear(
+    data: { id: string } & Partial<AcademicYear>,
+  ): Promise<AcademicYearDocument> {
     ValidationService.validateObjectId(data.id);
     const updated = await this.academicYearModel
       .findByIdAndUpdate(data.id, { $set: { ...data } }, { new: true })
@@ -108,15 +142,25 @@ export class AcademicYearsService {
     return updated;
   }
 
-  async deleteSchoolWithAcademicYear(params: { schoolId: string; academicYearId: string }) {
+  async deleteSchoolWithAcademicYear(params: {
+    schoolId: string;
+    academicYearId: string;
+  }) {
     const { schoolId, academicYearId } = params;
     ValidationService.validateObjectId(schoolId);
     ValidationService.validateObjectId(academicYearId);
 
     return TransactionService.runInTransaction(async (session) => {
-      await this.removeSchoolFromAcademicYear(academicYearId, schoolId, session);
+      await this.removeSchoolFromAcademicYear(
+        academicYearId,
+        schoolId,
+        session,
+      );
 
-      const deletedYear = await this.academicYearModel.findByIdAndDelete(academicYearId).session(session).exec();
+      const deletedYear = await this.academicYearModel
+        .findByIdAndDelete(academicYearId)
+        .session(session)
+        .exec();
       if (!deletedYear) throw new NotFoundException('Academic year not found');
 
       await this.schoolService.delete(schoolId);
@@ -129,7 +173,10 @@ export class AcademicYearsService {
     });
   }
 
-  async createSchoolWithAcademicYear(payload: { schoolId: string; academicYear: any }) {
+  async createSchoolWithAcademicYear(payload: {
+    schoolId: string;
+    academicYear: any;
+  }) {
     const { schoolId, academicYear } = payload;
     ValidationService.validateObjectId(schoolId);
     return this.createWithSchoolTransaction(academicYear, schoolId);

@@ -9,13 +9,16 @@ import { School } from './schemas/school.schema';
 
 @Injectable()
 export class SchoolService {
- 
-  constructor(
-    @InjectModel(School.name) private schoolModel: Model<School>
-  ) { }
+  constructor(@InjectModel(School.name) private schoolModel: Model<School>) {}
 
-  async create(createSchoolDto: CreateSchoolDto, userId: string, session?: ClientSession): Promise<SchoolResponseDto> {
-    const existingSchool = await this.schoolModel.findOne({ email: createSchoolDto.email }).session(session || null);
+  async create(
+    createSchoolDto: CreateSchoolDto,
+    userId: string,
+    session?: ClientSession,
+  ): Promise<SchoolResponseDto> {
+    const existingSchool = await this.schoolModel
+      .findOne({ email: createSchoolDto.email })
+      .session(session || null);
     if (existingSchool) {
       throw new Error('Une école avec cet email existe déjà');
     }
@@ -30,12 +33,17 @@ export class SchoolService {
     return this.mapToResponseDto(savedSchool);
   }
 
-  async update(updateSchoolDto: UpdateSchoolDto, userId: string): Promise<SchoolResponseDto> {
-    const updatedSchool = await this.schoolModel.findByIdAndUpdate(
-      updateSchoolDto.id,
-      { ...updateSchoolDto, updatedBy: userId },
-      { new: true, runValidators: true },
-    ).exec();
+  async update(
+    updateSchoolDto: UpdateSchoolDto,
+    userId: string,
+  ): Promise<SchoolResponseDto> {
+    const updatedSchool = await this.schoolModel
+      .findByIdAndUpdate(
+        updateSchoolDto.id,
+        { ...updateSchoolDto, updatedBy: userId },
+        { new: true, runValidators: true },
+      )
+      .exec();
 
     if (!updatedSchool) {
       throw new NotFoundException('School not found');
@@ -46,7 +54,7 @@ export class SchoolService {
 
   async findAll(): Promise<SchoolResponseDto[]> {
     const schools = await this.schoolModel.find().populate('classes').exec();
-    return schools.map(school => this.mapToResponseDto(school));
+    return schools.map((school) => this.mapToResponseDto(school));
   }
 
   async findById(id: string): Promise<SchoolResponseDto> {
@@ -75,12 +83,18 @@ export class SchoolService {
     await this.schoolModel.findByIdAndDelete(id).exec();
   }
 
-  async addTeacher(schoolId: string, teacherId: string, session?: ClientSession): Promise<SchoolResponseDto> {
-    const updatedSchool = await this.schoolModel.findByIdAndUpdate(
-      schoolId,
-      { $addToSet: { teachers: teacherId } },
-      { new: true, session },
-    ).exec();
+  async addTeacher(
+    schoolId: string,
+    teacherId: string,
+    session?: ClientSession,
+  ): Promise<SchoolResponseDto> {
+    const updatedSchool = await this.schoolModel
+      .findByIdAndUpdate(
+        schoolId,
+        { $addToSet: { teachers: teacherId } },
+        { new: true, session },
+      )
+      .exec();
 
     if (!updatedSchool) {
       throw new NotFoundException('School not found');
@@ -89,12 +103,18 @@ export class SchoolService {
     return this.mapToResponseDto(updatedSchool);
   }
 
-  async addAcademicYear(schoolId: string, academicYearId: string, session?: ClientSession): Promise<SchoolResponseDto> {
-    const updatedSchool = await this.schoolModel.findByIdAndUpdate(
-      schoolId,
-      { $addToSet: { academicYears: academicYearId } },
-      { new: true, session },
-    ).exec();
+  async addAcademicYear(
+    schoolId: string,
+    academicYearId: string,
+    session?: ClientSession,
+  ): Promise<SchoolResponseDto> {
+    const updatedSchool = await this.schoolModel
+      .findByIdAndUpdate(
+        schoolId,
+        { $addToSet: { academicYears: academicYearId } },
+        { new: true, session },
+      )
+      .exec();
 
     if (!updatedSchool) {
       throw new NotFoundException('School not found');
@@ -103,15 +123,24 @@ export class SchoolService {
     return this.mapToResponseDto(updatedSchool);
   }
 
-  async addClass(schoolId: string, classId: string, session?: ClientSession): Promise<void> {
-    await this.schoolModel.findByIdAndUpdate(
-      schoolId,
-      { $addToSet: { classes: classId } },
-      { session },
-    ).exec();
+  async addClass(
+    schoolId: string,
+    classId: string,
+    session?: ClientSession,
+  ): Promise<void> {
+    await this.schoolModel
+      .findByIdAndUpdate(
+        schoolId,
+        { $addToSet: { classes: classId } },
+        { session },
+      )
+      .exec();
   }
 
-  async findBySchoolAndLevel(schoolId: string, niveau: string): Promise<{ classes: Class[]; school: SchoolResponseDto }> {
+  async findBySchoolAndLevel(
+    schoolId: string,
+    niveau: string,
+  ): Promise<{ classes: Class[]; school: SchoolResponseDto }> {
     const [school, classes] = await Promise.all([
       this.schoolModel.findById(schoolId).exec(),
       this.schoolModel
@@ -121,7 +150,7 @@ export class SchoolService {
           match: { level: niveau },
           populate: ['school', 'educator'],
         })
-        .then(s => s?.classes || []),
+        .then((s) => s?.classes || []),
     ]);
 
     if (!school) {
@@ -137,14 +166,20 @@ export class SchoolService {
   /**
    * Ajoute un enseignant à l'école s'il n'est pas déjà présent
    */
-  async addTeacherIfNotExists(schoolId: string, teacherId: string): Promise<void> {
-    if (!Types.ObjectId.isValid(schoolId) || !Types.ObjectId.isValid(teacherId)) {
+  async addTeacherIfNotExists(
+    schoolId: string,
+    teacherId: string,
+  ): Promise<void> {
+    if (
+      !Types.ObjectId.isValid(schoolId) ||
+      !Types.ObjectId.isValid(teacherId)
+    ) {
       throw new NotFoundException('School or Teacher not found');
     }
     await this.schoolModel.findByIdAndUpdate(
       schoolId,
       { $addToSet: { teachers: teacherId } },
-      { new: true }
+      { new: true },
     );
   }
 

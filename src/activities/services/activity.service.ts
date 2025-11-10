@@ -6,13 +6,12 @@ import { IActivityService } from '../interfaces/IActivityService';
 import { ActivityRepository } from '../interfaces/activity.repository';
 import { Activity } from '../entities/activity.entity';
 
-
 @Injectable()
 export class ActivityService implements IActivityService {
   constructor(
     private readonly repository: ActivityRepository,
     private readonly validationService: ValidationService,
-  ) { }
+  ) {}
 
   async getActivitiesBySchool(schoolId: string): Promise<any[]> {
     ValidationService.validateObjectId(schoolId);
@@ -26,7 +25,7 @@ export class ActivityService implements IActivityService {
   }
 
   async updateActivity(updateData: ActivityUpdateDto): Promise<any> {
-   ValidationService.validateObjectId(updateData.id!);
+    ValidationService.validateObjectId(updateData.id!);
     const result = await this.repository.updateById(updateData);
     if (!result) {
       throw new NotFoundException('Activity not found');

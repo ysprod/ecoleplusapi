@@ -59,7 +59,3 @@ export class SchoolDto {
   // @ApiPropertyOptional({ type: [TeacherDto] })
   // teachers?: TeacherDto[];
 }
-
-
-
-

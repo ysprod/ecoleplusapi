@@ -7,7 +7,6 @@ import { SubjectResponseDto } from 'src/subject/dto/subject-response.dto';
 import { TeacherResponseDto } from 'src/teacher/dto/teacher-response.dto';
 import { UserResponseDto } from 'src/user/dto/user-response.dto';
 import { ScheduleResponseDto } from 'src/schedule/dto/ScheduleResponse.dto';
- 
 
 export class ClassResponseDto {
   @ApiProperty()

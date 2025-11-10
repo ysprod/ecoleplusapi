@@ -1,5 +1,15 @@
 // activity-create.dto.ts
-import { IsString, IsOptional, IsEnum, IsNumber, IsBoolean, IsObject, ValidateNested, IsMongoId, Min } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsNumber,
+  IsBoolean,
+  IsObject,
+  ValidateNested,
+  IsMongoId,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 class ScheduleDto {
@@ -49,8 +59,8 @@ export class ActivityCreateDto {
   @IsNumber()
   @Min(0)
   currentParticipants?: number;
-  
- @IsOptional()
+
+  @IsOptional()
   @IsMongoId()
   animator: string;
 

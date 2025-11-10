@@ -7,11 +7,13 @@ import { AccountingController } from './accounting.controller';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Accounting.name, schema: AccountingSchema }]),
+    MongooseModule.forFeature([
+      { name: Accounting.name, schema: AccountingSchema },
+    ]),
     AuthModule,
   ],
   controllers: [AccountingController],
   providers: [AccountingService],
   exports: [AccountingService],
 })
-export class AccountingModule { }
+export class AccountingModule {}

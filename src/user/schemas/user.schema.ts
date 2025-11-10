@@ -7,10 +7,25 @@ import { Accountant } from '../../accountant/schemas/accountant.schema';
 
 export type UserDocument = User & Document;
 
-export const ROLES = ['admin', 'user', 'teacher', 'parent', 'accountant', 'staff'];
-export const PROFILE_TYPES = ['student','parent','staff', 'founder','teacher', 'parent', 'accountant', 'other'];
+export const ROLES = [
+  'admin',
+  'user',
+  'teacher',
+  'parent',
+  'accountant',
+  'staff',
+];
+export const PROFILE_TYPES = [
+  'student',
+  'parent',
+  'staff',
+  'founder',
+  'teacher',
+  'parent',
+  'accountant',
+  'other',
+];
 
- 
 @Schema({ timestamps: true })
 export class User {
   _id: Types.ObjectId;

@@ -7,7 +7,9 @@ import { EducatorController } from './educator.controller';
 import { TeacherService } from '../teacher/teacher.service';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Class.name, schema: ClassSchema }])],
+  imports: [
+    MongooseModule.forFeature([{ name: Class.name, schema: ClassSchema }]),
+  ],
   providers: [EducatorRepository, EducatorService, TeacherService],
   controllers: [EducatorController],
 })

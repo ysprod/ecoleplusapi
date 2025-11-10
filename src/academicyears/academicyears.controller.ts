@@ -1,5 +1,25 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query, UnauthorizedException } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  UnauthorizedException,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { SchoolService } from '../school/school.service';
 import { AcademicYearsService } from './academicyears.service';
@@ -9,28 +29,34 @@ import { AcademicYear } from './schemas/academic-year.schema';
 @ApiBearerAuth()
 @Controller('academicyears')
 export class AcademicYearsController {
-
   constructor(
     private readonly academicYearsService: AcademicYearsService,
-    private readonly schoolService: SchoolService
-  ) { }
+    private readonly schoolService: SchoolService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Lister les années académiques avec leurs écoles' })
   @ApiOkResponse({ description: 'Liste des années académiques' })
   async listAll(@Query('user') userId?: string) {
-    const academicYears = await this.academicYearsService.getAcademicYearsWithSchools(userId);
-    return { success: true, hasData: academicYears.length > 0, data: academicYears };
+    const academicYears =
+      await this.academicYearsService.getAcademicYearsWithSchools(userId);
+    return {
+      success: true,
+      hasData: academicYears.length > 0,
+      data: academicYears,
+    };
   }
 
   @Post()
-  @ApiOperation({ summary: 'Créer une année académique et la lier à une école' })
+  @ApiOperation({
+    summary: 'Créer une année académique et la lier à une école',
+  })
   @ApiCreatedResponse({ description: 'Année académique créée' })
-  async createSchoolWithAcademicYear(
-    @Body() payload: any,
-  ) {
+  async createSchoolWithAcademicYear(@Body() payload: any) {
     if (!payload.user || !Types.ObjectId.isValid(payload.user)) {
-      throw new BadRequestException('user is required and must be a valid ObjectId');
+      throw new BadRequestException(
+        'user is required and must be a valid ObjectId',
+      );
     }
 
     // Séparer les données d'école et d'année académique
@@ -42,7 +68,7 @@ export class AcademicYearsController {
       email: payload.email,
       statut: payload.statut,
       niveaux: payload.niveaux,
-      matricule: payload.matricule
+      matricule: payload.matricule,
     };
 
     const academicYearData = {
@@ -51,7 +77,7 @@ export class AcademicYearsController {
       startDate: payload.startDate,
       endDate: payload.endDate,
       isCurrent: payload.isCurrent,
-      user: payload.user
+      user: payload.user,
     };
 
     // D'abord vérifier si une école avec cet email existe déjà
@@ -65,21 +91,24 @@ export class AcademicYearsController {
     // Ensuite créer l'année académique avec l'ID de l'école
     const restructuredPayload = {
       schoolId: school.id,
-      academicYear: academicYearData
+      academicYear: academicYearData,
     };
 
-    const result = await this.academicYearsService.createSchoolWithAcademicYear(restructuredPayload);
-    return { success: true, data: result  };
-
+    const result =
+      await this.academicYearsService.createSchoolWithAcademicYear(
+        restructuredPayload,
+      );
+    return { success: true, data: result };
   }
 
   @Put()
-  @ApiOperation({ summary: "Mettre à jour une année académique" })
+  @ApiOperation({ summary: 'Mettre à jour une année académique' })
   @ApiOkResponse({ description: 'Année académique mise à jour' })
   async updateSchoolWithAcademicYear(
     @Body() data: { id: string } & Partial<AcademicYear>,
   ) {
-    const updated = await this.academicYearsService.updateSchoolWithAcademicYear(data);
+    const updated =
+      await this.academicYearsService.updateSchoolWithAcademicYear(data);
     return { success: true, data: updated };
   }
 
@@ -89,7 +118,8 @@ export class AcademicYearsController {
   async patchSchoolWithAcademicYear(
     @Body() data: { id: string } & Partial<AcademicYear>,
   ) {
-    const updated = await this.academicYearsService.updateSchoolWithAcademicYear(data);
+    const updated =
+      await this.academicYearsService.updateSchoolWithAcademicYear(data);
     return { success: true, data: updated };
   }
 
@@ -101,7 +131,9 @@ export class AcademicYearsController {
     @Query('schoolId') schoolId: string,
     @Query('academicYearId') academicYearId: string,
   ) {
-    const result = await this.academicYearsService.deleteSchoolWithAcademicYear({ schoolId, academicYearId });
+    const result = await this.academicYearsService.deleteSchoolWithAcademicYear(
+      { schoolId, academicYearId },
+    );
     return { success: true, data: result };
   }
 

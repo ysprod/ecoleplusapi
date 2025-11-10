@@ -1,5 +1,11 @@
 // src/class/class.service.ts
-import { ConflictException, Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { AcademicYearResponseDto } from 'src/academicyears/dto/academic-year-response.dto';
@@ -18,71 +24,81 @@ import { Class, ClassDocument } from './schemas/class.schema';
 import { Student, StudentDocument } from '../students/schemas/student.schema';
 import { ValidationService } from '../shared/validation.service';
 import { ClassDetail } from './dto/class-detail.dto';
- 
 
 @Injectable()
 export class ClassService {
   constructor(
     @InjectModel(Class.name) private classModel: Model<ClassDocument>,
-    @Inject(forwardRef(() => SchoolService)) private schoolService: SchoolService,
+    @Inject(forwardRef(() => SchoolService))
+    private schoolService: SchoolService,
     @InjectModel(Student.name) private studentModel: Model<StudentDocument>,
-  ) { }
+  ) {}
   /**
    * Retourne les classes académiques filtrées pour le front-end
    */
-  async getAcademicClasses2(schoolId: string, classType?: string, niveau?: string): Promise<any[]> {
+  async getAcademicClasses2(
+    schoolId: string,
+    classType?: string,
+    niveau?: string,
+  ): Promise<any[]> {
     const filter: any = { school: schoolId };
     if (classType) filter.classType = classType;
     if (niveau) filter.level = niveau;
-    const classes = await this.classModel.find(filter).populate('school').exec();
+    const classes = await this.classModel
+      .find(filter)
+      .populate('school')
+      .exec();
     // Adapte le mapping si besoin
     return classes;
   }
 
-
   async getSchoolForClass(classId: string): Promise<SchoolResponseDto | null> {
     if (!Types.ObjectId.isValid(classId)) return null;
-    const classDoc = await this.classModel.findById(classId).populate('school').exec();
+    const classDoc = await this.classModel
+      .findById(classId)
+      .populate('school')
+      .exec();
     if (!classDoc || !classDoc.school) return null;
     // Si besoin, adapte le mapping
     return classDoc.school as unknown as SchoolResponseDto;
   }
 
   async getStudentsForClass(classId: string): Promise<StudentResponseDto[]> {
-    
     // Debug: vérifier si la classe existe
     const classDoc = await this.classModel.findById(classId).exec();
     if (!classDoc) {
       return [];
     }
-    
+
     // Debug: chercher les étudiants manuellement pour voir le problème
     if (classDoc.students && classDoc.students.length > 0) {
       // Essayer de trouver les étudiants en cherchant par leur ID
-      const studentsFromIds = await this.studentModel.find({
-        _id: { $in: classDoc.students }
-      }).exec();
-      
+      const studentsFromIds = await this.studentModel
+        .find({
+          _id: { $in: classDoc.students },
+        })
+        .exec();
+
       // Aussi chercher les étudiants qui ont cette classe comme référence
-      const studentsWithClassRef = await this.studentModel.find({
-        $or: [
-          { class: new Types.ObjectId(classId) },
-          { class: classId }
-        ]
-      }).exec();
+      const studentsWithClassRef = await this.studentModel
+        .find({
+          $or: [{ class: new Types.ObjectId(classId) }, { class: classId }],
+        })
+        .exec();
     }
-    
+
     // Maintenant faire le populate normal
     const classDocPopulated = await this.classModel
       .findById(classId)
       .populate({ path: 'students', model: 'Student' })
       .exec();
-      
+
     if (!classDocPopulated || !classDocPopulated.students) {
       return [];
     }
-    
-    const students = classDocPopulated.students as unknown as StudentResponseDto[];
+
+    const students =
+      classDocPopulated.students as unknown as StudentResponseDto[];
 
     // Mapping explicite pour garantir le type
     return students;
@@ -98,13 +114,13 @@ export class ClassService {
 
     const classDoc = await this.classModel
       .findById(classId)
-      .populate({ 
-        path: 'teachers', 
+      .populate({
+        path: 'teachers',
         model: 'Teacher',
         populate: [
           { path: 'subjects', model: 'Subject' },
-          { path: 'schools', model: 'School' }
-        ]
+          { path: 'schools', model: 'School' },
+        ],
       })
       .exec();
 
@@ -121,7 +137,11 @@ export class ClassService {
     return teachers;
   }
 
-  async getAcademicClasses(schoolId: string, classType?: string, niveau?: string): Promise<any[]> {
+  async getAcademicClasses(
+    schoolId: string,
+    classType?: string,
+    niveau?: string,
+  ): Promise<any[]> {
     // Ajoute une vérification sur schoolId
     if (!schoolId) return [];
 
@@ -160,7 +180,10 @@ export class ClassService {
   /**
    * Retourne les étudiants d'une école avec pagination
    */
-  async getSchoolStudents(schoolId: string, options?: { page?: number; limit?: number; niveau?: string }) {
+  async getSchoolStudents(
+    schoolId: string,
+    options?: { page?: number; limit?: number; niveau?: string },
+  ) {
     // Vérifie la validité de l'id
     if (!schoolId || !Types.ObjectId.isValid(schoolId)) {
       return {
@@ -182,16 +205,20 @@ export class ClassService {
       .exec();
 
     // Filtrage par niveau si demandé
-      let students = studentsRaw;
-      if (options?.niveau) {
-        students = studentsRaw.filter(s => s.class && (s.class as any).level === options.niveau);
-      }
+    let students = studentsRaw;
+    if (options?.niveau) {
+      students = studentsRaw.filter(
+        (s) => s.class && (s.class as any).level === options.niveau,
+      );
+    }
 
     // Pour la pagination correcte, on doit aussi compter le total filtré
     let total = await this.studentModel.countDocuments(query);
     if (options?.niveau) {
       // Compte le total filtré
-      total = studentsRaw.filter(s => s.class && (s.class as any).level === options.niveau).length;
+      total = studentsRaw.filter(
+        (s) => s.class && (s.class as any).level === options.niveau,
+      ).length;
     }
 
     return {
@@ -205,8 +232,10 @@ export class ClassService {
     };
   }
 
-
-  async find(params?: { schoolId?: string; niveau?: string }): Promise<ClassResponseDto[]> {
+  async find(params?: {
+    schoolId?: string;
+    niveau?: string;
+  }): Promise<ClassResponseDto[]> {
     const filter: any = {};
 
     if (params?.schoolId) {
@@ -221,7 +250,7 @@ export class ClassService {
       .populate('school')
       .exec();
 
-    return classes.map(cls => this.mapToResponseDto(cls));
+    return classes.map((cls) => this.mapToResponseDto(cls));
   }
 
   async create(createClassDto: CreateClassDto): Promise<ClassResponseDto> {
@@ -231,7 +260,9 @@ export class ClassService {
       school: createClassDto.schoolId,
     });
     if (existingClass) {
-      throw new ConflictException('Class with this name already exists in this school');
+      throw new ConflictException(
+        'Class with this name already exists in this school',
+      );
     }
 
     // Create fees object if provided
@@ -243,10 +274,16 @@ export class ClassService {
       fees['canteen'] = { amount: createClassDto.canteenFee, currency: 'FCFA' };
     }
     if (createClassDto.transportFee !== undefined) {
-      fees['transport'] = { amount: createClassDto.transportFee, currency: 'FCFA' };
+      fees['transport'] = {
+        amount: createClassDto.transportFee,
+        currency: 'FCFA',
+      };
     }
     if (createClassDto.activitiesFee !== undefined) {
-      fees['activities'] = { amount: createClassDto.activitiesFee, currency: 'FCFA' };
+      fees['activities'] = {
+        amount: createClassDto.activitiesFee,
+        currency: 'FCFA',
+      };
     }
 
     const createdClass = new this.classModel({
@@ -269,7 +306,7 @@ export class ClassService {
 
   async findAll(): Promise<ClassResponseDto[]> {
     const classes = await this.classModel.find().populate('school').exec();
-    return classes.map(cls => this.mapToResponseDto(cls));
+    return classes.map((cls) => this.mapToResponseDto(cls));
   }
 
   async findById(id: string): Promise<ClassResponseDto> {
@@ -294,7 +331,7 @@ export class ClassService {
       .find({ school: schoolId })
       .populate('school')
       .exec();
-    return classes.map(cls => this.mapToResponseDto(cls));
+    return classes.map((cls) => this.mapToResponseDto(cls));
   }
 
   async findBySchoolAndLevel(
@@ -305,7 +342,7 @@ export class ClassService {
       .find({ school: schoolId, level })
       .populate('school')
       .exec();
-    return classes.map(cls => this.mapToResponseDto(cls));
+    return classes.map((cls) => this.mapToResponseDto(cls));
   }
 
   async update(
@@ -344,8 +381,14 @@ export class ClassService {
     }
   }
 
-  async addStudent(classId: string, studentId: string): Promise<ClassResponseDto> {
-    if (!Types.ObjectId.isValid(classId) || !Types.ObjectId.isValid(studentId)) {
+  async addStudent(
+    classId: string,
+    studentId: string,
+  ): Promise<ClassResponseDto> {
+    if (
+      !Types.ObjectId.isValid(classId) ||
+      !Types.ObjectId.isValid(studentId)
+    ) {
       throw new NotFoundException('Class or student not found');
     }
 
@@ -369,13 +412,16 @@ export class ClassService {
    * Ajoute un enseignant à une classe (si non déjà présent)
    */
   async addTeacherToClass(classId: string, teacherId: string): Promise<void> {
-    if (!Types.ObjectId.isValid(classId) || !Types.ObjectId.isValid(teacherId)) {
+    if (
+      !Types.ObjectId.isValid(classId) ||
+      !Types.ObjectId.isValid(teacherId)
+    ) {
       throw new NotFoundException('Class or Teacher not found');
     }
     await this.classModel.findByIdAndUpdate(
       classId,
       { $addToSet: { teachers: teacherId } },
-      { new: true }
+      { new: true },
     );
   }
 
@@ -383,16 +429,15 @@ export class ClassService {
     classId: string,
     educatorId: string,
   ): Promise<ClassResponseDto> {
-    if (!Types.ObjectId.isValid(classId) || !Types.ObjectId.isValid(educatorId)) {
+    if (
+      !Types.ObjectId.isValid(classId) ||
+      !Types.ObjectId.isValid(educatorId)
+    ) {
       throw new NotFoundException('Class or educator not found');
     }
 
     const updatedClass = await this.classModel
-      .findByIdAndUpdate(
-        classId,
-        { educator: educatorId },
-        { new: true },
-      )
+      .findByIdAndUpdate(classId, { educator: educatorId }, { new: true })
       .populate('school students teachers educator academicYear subjects')
       .exec();
 
@@ -404,7 +449,9 @@ export class ClassService {
   }
 
   async getClassStats(schoolId?: string): Promise<ClassStatisticsDto> {
-    const matchStage = schoolId ? { $match: { school: new Types.ObjectId(schoolId) } } : { $match: {} };
+    const matchStage = schoolId
+      ? { $match: { school: new Types.ObjectId(schoolId) } }
+      : { $match: {} };
 
     const stats = await this.classModel.aggregate([
       matchStage,
@@ -415,19 +462,19 @@ export class ClassService {
               $group: {
                 _id: null,
                 totalClasses: { $sum: 1 },
-                avgStudents: { $avg: { $size: "$students" } },
-                totalStudents: { $sum: { $size: "$students" } },
-                totalTeachers: { $sum: { $size: "$teachers" } },
+                avgStudents: { $avg: { $size: '$students' } },
+                totalStudents: { $sum: { $size: '$students' } },
+                totalTeachers: { $sum: { $size: '$teachers' } },
               },
             },
           ],
           byLevel: [
             {
               $group: {
-                _id: "$level",
+                _id: '$level',
                 count: { $sum: 1 },
                 withEducator: {
-                  $sum: { $cond: [{ $ifNull: ["$educator", false] }, 1, 0] },
+                  $sum: { $cond: [{ $ifNull: ['$educator', false] }, 1, 0] },
                 },
               },
             },
@@ -435,7 +482,7 @@ export class ClassService {
           byClassType: [
             {
               $group: {
-                _id: "$classType",
+                _id: '$classType',
                 count: { $sum: 1 },
               },
             },
@@ -444,7 +491,7 @@ export class ClassService {
             {
               $group: {
                 _id: {
-                  $dateToString: { format: "%Y-%m", date: "$createdAt" },
+                  $dateToString: { format: '%Y-%m', date: '$createdAt' },
                 },
                 count: { $sum: 1 },
               },
@@ -455,7 +502,7 @@ export class ClassService {
       },
       {
         $project: {
-          summary: { $arrayElemAt: ["$summary", 0] },
+          summary: { $arrayElemAt: ['$summary', 0] },
           byLevel: 1,
           byClassType: 1,
           creationTrend: 1,
@@ -474,20 +521,23 @@ export class ClassService {
         totalStudents: result.summary?.totalStudents || 0,
         totalTeachers: result.summary?.totalTeachers || 0,
       },
-      byLevel: result.byLevel?.map((item: any) => ({
-        level: item._id,
-        count: item.count,
-        withEducator: item.withEducator,
-      })) || [],
-      byClassType: result.byClassType?.map((item: any) => ({
-        classType: item._id,
-        count: item.count,
-      })) || [],
+      byLevel:
+        result.byLevel?.map((item: any) => ({
+          level: item._id,
+          count: item.count,
+          withEducator: item.withEducator,
+        })) || [],
+      byClassType:
+        result.byClassType?.map((item: any) => ({
+          classType: item._id,
+          count: item.count,
+        })) || [],
       topSchools: [],
-      creationTrend: result.creationTrend?.map((item: any) => ({
-        month: item._id,
-        count: item.count,
-      })) || [],
+      creationTrend:
+        result.creationTrend?.map((item: any) => ({
+          month: item._id,
+          count: item.count,
+        })) || [],
     };
   }
 
@@ -495,27 +545,37 @@ export class ClassService {
    * Retire un élève d'une classe
    */
   async removeStudent(classId: string, studentId: string): Promise<void> {
-    if (!Types.ObjectId.isValid(classId) || !Types.ObjectId.isValid(studentId)) {
+    if (
+      !Types.ObjectId.isValid(classId) ||
+      !Types.ObjectId.isValid(studentId)
+    ) {
       throw new NotFoundException('Class or Student not found');
     }
-    await this.classModel.findByIdAndUpdate(
-      classId,
-      { $pull: { students: new Types.ObjectId(studentId) } }
-    );
+    await this.classModel.findByIdAndUpdate(classId, {
+      $pull: { students: new Types.ObjectId(studentId) },
+    });
   }
 
   /**
    * Ajoute un enseignant à la classe (sans doublon)
    */
-  async addTeacher(classId: string, teacherId: string): Promise<ClassResponseDto> {
-    if (!Types.ObjectId.isValid(classId) || !Types.ObjectId.isValid(teacherId)) {
+  async addTeacher(
+    classId: string,
+    teacherId: string,
+  ): Promise<ClassResponseDto> {
+    if (
+      !Types.ObjectId.isValid(classId) ||
+      !Types.ObjectId.isValid(teacherId)
+    ) {
       throw new NotFoundException('Class or Teacher not found');
     }
-    const updatedClass = await this.classModel.findByIdAndUpdate(
-      classId,
-      { $addToSet: { teachers: new Types.ObjectId(teacherId) } },
-      { new: true }
-    ).populate('teachers');
+    const updatedClass = await this.classModel
+      .findByIdAndUpdate(
+        classId,
+        { $addToSet: { teachers: new Types.ObjectId(teacherId) } },
+        { new: true },
+      )
+      .populate('teachers');
     if (!updatedClass) {
       throw new NotFoundException('Class not found');
     }
@@ -535,7 +595,10 @@ export class ClassService {
   /**
    * Retourne les classes d'un enseignant, éventuellement filtrées par école
    */
-  async getTeacherClasses(teacherId: string, schoolId?: string): Promise<ClassDetail[]> {
+  async getTeacherClasses(
+    teacherId: string,
+    schoolId?: string,
+  ): Promise<ClassDetail[]> {
     ValidationService.validateObjectId(teacherId);
 
     const query: any = { teachers: teacherId };
@@ -553,7 +616,7 @@ export class ClassService {
       .lean()
       .exec();
 
-    return classes.map(cls => ({
+    return classes.map((cls) => ({
       _id: cls._id?.toString(),
       name: cls.name,
       level: cls.level,

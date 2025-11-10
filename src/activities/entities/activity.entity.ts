@@ -3,10 +3,20 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
 import { School } from 'src/school/schemas/school.schema';
 import { User } from 'src/user/schemas/user.schema';
 
-
-export type ActivityCategory = 'sport' | 'art' | 'musique' | 'science' | 'autre';
+export type ActivityCategory =
+  | 'sport'
+  | 'art'
+  | 'musique'
+  | 'science'
+  | 'autre';
 export type ActivityLevel = 'débutant' | 'intermédiaire' | 'avancé';
-export type DayOfWeek = 'lundi' | 'mardi' | 'mercredi' | 'jeudi' | 'vendredi' | 'samedi';
+export type DayOfWeek =
+  | 'lundi'
+  | 'mardi'
+  | 'mercredi'
+  | 'jeudi'
+  | 'vendredi'
+  | 'samedi';
 
 @Schema({ timestamps: true })
 export class Activity extends Document {
@@ -17,7 +27,7 @@ export class Activity extends Document {
     type: String,
     required: [true, "Le nom de l'activité est obligatoire"],
     trim: true,
-    uppercase: true
+    uppercase: true,
   })
   name: string;
 
@@ -27,14 +37,14 @@ export class Activity extends Document {
   @Prop({
     type: String,
     enum: ['sport', 'art', 'musique', 'science', 'autre'],
-    default: 'autre'
+    default: 'autre',
   })
   category: ActivityCategory;
 
   @Prop({
     type: String,
     enum: ['débutant', 'intermédiaire', 'avancé'],
-    default: 'débutant'
+    default: 'débutant',
   })
   level: ActivityLevel;
 
@@ -43,12 +53,12 @@ export class Activity extends Document {
       day: {
         type: String,
         enum: ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'],
-        required: true
+        required: true,
       },
       startTime: { type: String, required: true },
-      endTime: { type: String, required: true }
+      endTime: { type: String, required: true },
     },
-    required: true
+    required: true,
   })
   schedule: {
     day: DayOfWeek;
@@ -65,7 +75,7 @@ export class Activity extends Document {
   @Prop({ type: Number, default: 0 })
   currentParticipants: number;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User'})
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User' })
   animator: User;
 
   @Prop({ type: Number, min: 0, default: 0 })

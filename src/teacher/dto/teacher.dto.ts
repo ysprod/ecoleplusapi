@@ -1,6 +1,6 @@
 import { SchoolDto } from 'src/school/dto/school.dto';
 import { ClassDto } from '../../classes/dto/class.dto';
-  
+
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserDto } from 'src/user/dto/user.dto';
 import { GradeDto } from 'src/grade/dto/grade.dto';
@@ -57,4 +57,3 @@ export class TeacherDto {
   @ApiPropertyOptional()
   updatedAt?: string;
 }
-

@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Request } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Request,
+} from '@nestjs/common';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { TeacherResponseDto } from './dto/teacher-response.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
@@ -9,15 +19,14 @@ import { PaginatedTeachersResponseDto } from './dto/paginated-teachers.dto';
 
 @Controller('teachers')
 export class TeacherController {
-
-  constructor(private readonly teacherService: TeacherService) { }
+  constructor(private readonly teacherService: TeacherService) {}
 
   @Get('single')
   async findSingleTeacher(@Query('matricule') matricule: string) {
     if (!matricule) {
       return { data: null };
     }
-    
+
     try {
       const teacher = await this.teacherService.findByMatricule(matricule);
       return { data: teacher };
@@ -30,9 +39,13 @@ export class TeacherController {
    * Création ou mise à jour d'un enseignant (upsert)
    */
   @Post('upsert')
-  async createOrUpdateTeacher(@Body() body: CreateTeacherDto): Promise<{ success: boolean; data: TeacherResponseDto }> {
+  async createOrUpdateTeacher(
+    @Body() body: CreateTeacherDto,
+  ): Promise<{ success: boolean; data: TeacherResponseDto }> {
     // Recherche l'enseignant existant par matricule
-    const teacher = body.matricule ? await this.teacherService.findByMatricule(body.matricule) : null;
+    const teacher = body.matricule
+      ? await this.teacherService.findByMatricule(body.matricule)
+      : null;
 
     if (teacher && teacher.id) {
       // Mise à jour
@@ -134,15 +147,15 @@ export class TeacherController {
 
   @Post('assign')
   async assignTeacherToClass(
-    @Body() payload: {
+    @Body()
+    payload: {
       matricule: string;
       teacherId: string;
       subjects: string[];
       classId: string;
       schoolId: string;
-    }
+    },
   ) {
-
     return this.teacherService.assignTeacherToClass(payload);
   }
 }

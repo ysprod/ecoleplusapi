@@ -7,7 +7,7 @@ import { PermissionsService } from './permissions.service';
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: Permission.name, schema: PermissionSchema }
+      { name: Permission.name, schema: PermissionSchema },
     ]),
   ],
   controllers: [PermissionsController],

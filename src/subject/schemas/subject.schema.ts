@@ -3,18 +3,33 @@ import { Document, Types } from 'mongoose';
 
 export type SubjectStatus = 'active' | 'inactive' | 'archived';
 
-@Schema({ timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
+@Schema({
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
+})
 export class Subject extends Document {
   @Prop({ required: true, trim: true, maxlength: 100 })
   name: string;
 
-  @Prop({ required: true, uppercase: true, trim: true, maxlength: 20, index: true })
+  @Prop({
+    required: true,
+    uppercase: true,
+    trim: true,
+    maxlength: 20,
+    index: true,
+  })
   code: string;
 
   @Prop({ type: Types.ObjectId, ref: 'School', required: true, index: true })
   school: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'AcademicYear', required: true, index: true })
+  @Prop({
+    type: Types.ObjectId,
+    ref: 'AcademicYear',
+    required: true,
+    index: true,
+  })
   academicYear: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'Department', index: true })
@@ -41,7 +56,11 @@ export class Subject extends Document {
   @Prop([{ type: Types.ObjectId, ref: 'Subject' }])
   coRequisites?: Types.ObjectId[];
 
-  @Prop({ enum: ['active', 'inactive', 'archived'], default: 'active', index: true })
+  @Prop({
+    enum: ['active', 'inactive', 'archived'],
+    default: 'active',
+    index: true,
+  })
   status: SubjectStatus;
 }
 
@@ -53,7 +72,7 @@ SubjectSchema.index({ school: 1, electiveGroup: 1 });
 SubjectSchema.index({ code: 1, academicYear: 1 }, { unique: true });
 
 // Validation pour les matières optionnelles
-SubjectSchema.path('electiveGroup').validate(function(this: Subject) {
+SubjectSchema.path('electiveGroup').validate(function (this: Subject) {
   if (!this.isCore && !this.electiveGroup) {
     return false;
   }
@@ -61,17 +80,17 @@ SubjectSchema.path('electiveGroup').validate(function(this: Subject) {
 }, 'Les matières optionnelles doivent avoir un groupe défini');
 
 // Méthodes d'instance
-SubjectSchema.methods.activate = function() {
+SubjectSchema.methods.activate = function () {
   this.status = 'active';
   return this.save();
 };
 
-SubjectSchema.methods.deactivate = function() {
+SubjectSchema.methods.deactivate = function () {
   this.status = 'inactive';
   return this.save();
 };
 
-SubjectSchema.methods.addPrerequisite = function(subjectId: Types.ObjectId) {
+SubjectSchema.methods.addPrerequisite = function (subjectId: Types.ObjectId) {
   if (!this.prerequisites.includes(subjectId)) {
     this.prerequisites.push(subjectId);
   }
@@ -79,23 +98,31 @@ SubjectSchema.methods.addPrerequisite = function(subjectId: Types.ObjectId) {
 };
 
 // Méthodes statiques
-SubjectSchema.statics.findBySchool = function(schoolId: Types.ObjectId) {
+SubjectSchema.statics.findBySchool = function (schoolId: Types.ObjectId) {
   return this.find({ school: schoolId }).sort({ name: 1 });
 };
 
-SubjectSchema.statics.findByAcademicYear = function(academicYearId: Types.ObjectId) {
-  return this.find({ academicYear: academicYearId }).sort({ isCore: -1, name: 1 });
+SubjectSchema.statics.findByAcademicYear = function (
+  academicYearId: Types.ObjectId,
+) {
+  return this.find({ academicYear: academicYearId }).sort({
+    isCore: -1,
+    name: 1,
+  });
 };
 
-SubjectSchema.statics.findByTeacher = function(teacherId: Types.ObjectId) {
+SubjectSchema.statics.findByTeacher = function (teacherId: Types.ObjectId) {
   return this.find({ teacher: teacherId }).sort({ academicYear: -1, name: 1 });
 };
 
-SubjectSchema.statics.findCoreSubjects = function(schoolId: Types.ObjectId) {
+SubjectSchema.statics.findCoreSubjects = function (schoolId: Types.ObjectId) {
   return this.find({ school: schoolId, isCore: true }).sort({ name: 1 });
 };
 
-SubjectSchema.statics.findElectives = function(schoolId: Types.ObjectId, group?: string) {
+SubjectSchema.statics.findElectives = function (
+  schoolId: Types.ObjectId,
+  group?: string,
+) {
   const query: any = { school: schoolId, isCore: false };
   if (group) {
     query.electiveGroup = group;

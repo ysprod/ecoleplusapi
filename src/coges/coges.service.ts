@@ -15,42 +15,40 @@ export class CogesService {
   ) {}
 
   async findBySchoolId(schoolId: string) {
-    
     if (!Types.ObjectId.isValid(schoolId)) {
-
       return null;
     }
-    
+
     const schoolObjectId = new Types.ObjectId(schoolId);
-    
+
     const result = await this.cogesModel
       .findOne({ school: schoolObjectId })
       .populate({
         path: 'parents',
-        populate: { path: 'user', model: 'User' }
+        populate: { path: 'user', model: 'User' },
       })
-      
+
       .populate({
         path: 'president',
-        populate: { path: 'user', model: 'User' }
+        populate: { path: 'user', model: 'User' },
       })
       .populate({
         path: 'treasurer',
-        populate: { path: 'user', model: 'User' }
+        populate: { path: 'user', model: 'User' },
       })
       .populate({
         path: 'secretary',
-        populate: { path: 'user', model: 'User' }
+        populate: { path: 'user', model: 'User' },
       })
       .exec();
-      
+
     return result;
   }
 
   async create(dto: CreateCogesDto): Promise<Coges> {
     try {
       const { schoolId, parentIds, parentId, userId } = dto;
-     
+
       if (!schoolId) {
         throw new Error('schoolId is required');
       }
@@ -64,7 +62,8 @@ export class CogesService {
       // Normaliser parentIds[]
       if (Array.isArray(parentIds) && parentIds.length) {
         for (const id of parentIds) {
-          if (Types.ObjectId.isValid(id)) parentObjectIds.push(new Types.ObjectId(id));
+          if (Types.ObjectId.isValid(id))
+            parentObjectIds.push(new Types.ObjectId(id));
         }
       }
 
@@ -79,9 +78,15 @@ export class CogesService {
           throw new Error(`Invalid userId format: ${userId}`);
         }
         const userObjectId = new Types.ObjectId(userId);
-        let parent = await this.parentModel.findOne({ user: userObjectId }).exec();
+        let parent = await this.parentModel
+          .findOne({ user: userObjectId })
+          .exec();
         if (!parent) {
-          parent = await this.parentModel.create({ user: userObjectId, students: [], payments: [] });
+          parent = await this.parentModel.create({
+            user: userObjectId,
+            students: [],
+            payments: [],
+          });
         }
         parentObjectIds.push(parent._id);
       }
@@ -106,20 +111,25 @@ export class CogesService {
         const schoolObjectId = new Types.ObjectId(dto.schoolId);
         const fallbackParentIds: Types.ObjectId[] = [];
         if (Array.isArray(dto.parentIds)) {
-          for (const id of dto.parentIds) if (Types.ObjectId.isValid(id)) fallbackParentIds.push(new Types.ObjectId(id));
+          for (const id of dto.parentIds)
+            if (Types.ObjectId.isValid(id))
+              fallbackParentIds.push(new Types.ObjectId(id));
         }
-        if (dto.parentId && Types.ObjectId.isValid(dto.parentId)) fallbackParentIds.push(new Types.ObjectId(dto.parentId));
+        if (dto.parentId && Types.ObjectId.isValid(dto.parentId))
+          fallbackParentIds.push(new Types.ObjectId(dto.parentId));
         if (fallbackParentIds.length) {
           const updated = await this.cogesModel
             .findOneAndUpdate(
               { school: schoolObjectId },
               { $addToSet: { parents: { $each: fallbackParentIds } } },
-              { new: true }
+              { new: true },
             )
             .exec();
           return updated as Coges;
         }
-        const existing = await this.cogesModel.findOne({ school: schoolObjectId }).exec();
+        const existing = await this.cogesModel
+          .findOne({ school: schoolObjectId })
+          .exec();
         if (existing) return existing as Coges;
       }
       console.error('Error creating/upserting COGES:', error);

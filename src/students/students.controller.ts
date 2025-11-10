@@ -30,7 +30,9 @@ export class StudentsController {
    * Recherche d'étudiants par terme (nom, prénom, matricule, etc.)
    */
   @Get('search')
-  async searchStudents(@Query('search') search: string): Promise<{ data: StudentResponseDto[] }> {
+  async searchStudents(
+    @Query('search') search: string,
+  ): Promise<{ data: StudentResponseDto[] }> {
     if (!search || !search.trim()) return { data: [] };
     const results = await this.studentsService.searchStudents(search);
     return { data: results };
@@ -42,7 +44,10 @@ export class StudentsController {
   }
 
   @Post()
-  async create(@Body() createStudentDto: CreateStudentDto): Promise<StudentResponseDto> {
+  async create(
+    @Body() createStudentDto: CreateStudentDto,
+  ): Promise<StudentResponseDto> {
+    console.log('Creating student with data:', createStudentDto);
     return this.studentsService.create(createStudentDto);
   }
 
@@ -69,14 +74,20 @@ export class StudentsController {
   }
 
   @Get('verifystudent')
-  async verifyStudent(@Query('id') id: string): Promise<{ data: StudentResponseDto | null }> {
+  async verifyStudent(
+    @Query('id') id: string,
+  ): Promise<{ data: StudentResponseDto | null }> {
     console.log('Verifying student with user ID:', id);
     Logger.log(`ID reçu pour vérification : ${id}`, 'StudentsController');
     if (!id || !id.trim()) {
       throw new NotFoundException('User ID is required');
     }
     // Recherche l'utilisateur pour obtenir le matricule
-    const user = await this.userModel.findById(id).select('matricule').lean().exec();
+    const user = await this.userModel
+      .findById(id)
+      .select('matricule')
+      .lean()
+      .exec();
     if (!user || !user.matricule) {
       throw new NotFoundException('Matricule not found for this user');
     }
@@ -89,7 +100,9 @@ export class StudentsController {
   }
 
   @Get('matricule/:matricule')
-  async findByMatricule(@Param('matricule') matricule: string): Promise<StudentResponseDto> {
+  async findByMatricule(
+    @Param('matricule') matricule: string,
+  ): Promise<StudentResponseDto> {
     return this.studentsService.findByMatricule(matricule);
   }
 

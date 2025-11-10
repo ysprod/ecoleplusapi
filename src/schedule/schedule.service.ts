@@ -11,7 +11,11 @@ export class ScheduleService {
   ) {}
 
   async getAllSchedules(): Promise<Schedule[]> {
-    return this.scheduleModel.find().populate('class').populate('teacher').exec();
+    return this.scheduleModel
+      .find()
+      .populate('class')
+      .populate('teacher')
+      .exec();
   }
 
   async createSchedule(data: ScheduleEventDto): Promise<Schedule> {
@@ -20,7 +24,11 @@ export class ScheduleService {
   }
 
   async getScheduleByClass(classId: string): Promise<Schedule[]> {
-    return this.scheduleModel.find({ class: classId }).populate('teacher').populate('class').exec();
+    return this.scheduleModel
+      .find({ class: classId })
+      .populate('teacher')
+      .populate('class')
+      .exec();
   }
 
   async deleteByClassId(classId: string): Promise<void> {

@@ -23,7 +23,9 @@ export class StudentDto {
   @ApiPropertyOptional({ enum: ['M', 'F'] })
   gender?: 'M' | 'F';
 
-  @ApiPropertyOptional({ enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] })
+  @ApiPropertyOptional({
+    enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+  })
   bloodGroup?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
 
   @ApiPropertyOptional()

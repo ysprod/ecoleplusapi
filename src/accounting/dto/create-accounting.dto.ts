@@ -1,12 +1,21 @@
-import { IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
+import {
+  IsDate,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
 export class CreateAccountingDto {
-
   @ApiProperty({ required: false, type: String, example: '1990-01-01' })
   @Type(() => Date) // transforme string en Date
-  @IsDate({ message: 'birthDate must be a valid Date (ISO string: YYYY-MM-DD)' })
+  @IsDate({
+    message: 'birthDate must be a valid Date (ISO string: YYYY-MM-DD)',
+  })
   @IsOptional()
   date?: Date;
   // @ApiProperty({ required: false, default: new Date() })

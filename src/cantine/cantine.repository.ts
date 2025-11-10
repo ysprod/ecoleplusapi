@@ -4,28 +4,25 @@ import { Model, Types } from 'mongoose';
 import { Cantine } from './schemas/cantine.schema';
 import { CantineCreateDto } from './dtos/CantineCreate.dto';
 import { CantineUpdateDto } from './dtos/CantineUpdateDto';
- 
 
 @Injectable()
 export class CantineRepository {
-  constructor(@InjectModel(Cantine.name) private cantineModel: Model<Cantine>) {}
+  constructor(
+    @InjectModel(Cantine.name) private cantineModel: Model<Cantine>,
+  ) {}
 
   async getMenusBySchool(schoolId: Types.ObjectId) {
-    
-    
-    
     // Chercher avec l'ObjectId ET avec la version string
     const schoolIdString = schoolId.toString();
-    
+
     const query = {
-      $or: [
-        { school: schoolId },
-        { school: schoolIdString }
-      ]
+      $or: [{ school: schoolId }, { school: schoolIdString }],
     };
-    
-    const sortedMenus = await this.cantineModel.find(query).sort({ createdAt: -1, date: 1 });
-    
+
+    const sortedMenus = await this.cantineModel
+      .find(query)
+      .sort({ createdAt: -1, date: 1 });
+
     return sortedMenus;
   }
 

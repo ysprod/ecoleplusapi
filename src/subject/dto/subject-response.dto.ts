@@ -17,4 +17,5 @@ export class SubjectResponseDto {
   createdAt?: Date;
 
   @ApiProperty({ required: false })
-  updatedAt?: Date; }
+  updatedAt?: Date;
+}

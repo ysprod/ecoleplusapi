@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, ConflictException, Inject, forwardRef } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
@@ -15,14 +21,16 @@ import { Teacher } from 'src/teacher/schemas/teacher.schema';
 @Injectable()
 export class UserService {
   constructor(
-       @InjectModel(Teacher.name) private teacherModel: Model<Teacher>,
+    @InjectModel(Teacher.name) private teacherModel: Model<Teacher>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
-    @Inject(forwardRef(() => TeacherService)) private teacherService: TeacherService,
-    @Inject(forwardRef(() => ParentService)) private parentService: ParentService,
-  ) { }
+    @Inject(forwardRef(() => TeacherService))
+    private teacherService: TeacherService,
+    @Inject(forwardRef(() => ParentService))
+    private parentService: ParentService,
+  ) {}
 
   private mapToResponseDto(user: UserDocument): UserResponseDto {
-    const userDoc = user as UserDocument;
+    const userDoc = user;
     return {
       id: userDoc._id.toString(),
       email: userDoc.email,
@@ -45,13 +53,13 @@ export class UserService {
   }
 
   async findByPhone(phone: string): Promise<UserResponseDto> {
-  const user = await this.userModel.findOne({ phone }).exec();
-  if (!user) {
-    throw new NotFoundException('User not found');
-  }
+    const user = await this.userModel.findOne({ phone }).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
-  return this.mapToResponseDto(user);
-}
+    return this.mapToResponseDto(user);
+  }
 
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     const email = createUserDto.email.toLowerCase();
@@ -68,9 +76,9 @@ export class UserService {
     });
 
     const savedUser = await createdUser.save();
-    const usersaved =this.mapToResponseDto(savedUser);
-    
-  // Si l'utilisateur a le rôle "staff", créer automatiquement un enregistrement Teacher
+    const usersaved = this.mapToResponseDto(savedUser);
+
+    // Si l'utilisateur a le rôle "staff", créer automatiquement un enregistrement Teacher
     if (usersaved.profileType === 'staff') {
       try {
         const createTeacherDto: CreateTeacherDto = {
@@ -83,20 +91,20 @@ export class UserService {
           birthDate: usersaved.birthDate,
         };
 
-         const createdTeacher = new this.teacherModel({...usersaved,
-      ...createTeacherDto,
-      user: usersaved.id,
-    });
+        const createdTeacher = new this.teacherModel({
+          ...usersaved,
+          ...createTeacherDto,
+          user: usersaved.id,
+        });
 
-    const savedTeacher = await createdTeacher.save();
-        
-      // const test= await this.teacherService.create(createTeacherDto);
+        const savedTeacher = await createdTeacher.save();
+        // const test= await this.teacherService.create(createTeacherDto);
       } catch (error) {
         // Log l'erreur mais ne pas faire échouer la création de l'utilisateur
         console.error('Failed to create teacher record for staff user:', error);
       }
     }
-    
+
     // Si l'utilisateur a le rôle "parent", créer automatiquement un enregistrement Parent
     if (usersaved.role === 'parent' || usersaved.profileType === 'parent') {
       try {
@@ -106,13 +114,13 @@ export class UserService {
         console.error('Failed to create parent record for parent user:', error);
       }
     }
-    
+
     return usersaved;
   }
 
   async findAll(): Promise<UserResponseDto[]> {
     const users = await this.userModel.find().exec();
-    return users.map(user => this.mapToResponseDto(user));
+    return users.map((user) => this.mapToResponseDto(user));
   }
 
   async findOne(id: string): Promise<UserResponseDto> {
@@ -129,7 +137,9 @@ export class UserService {
   }
 
   async findByEmail(email: string): Promise<UserResponseDto> {
-    const user = await this.userModel.findOne({ email: email.toLowerCase() }).exec();
+    const user = await this.userModel
+      .findOne({ email: email.toLowerCase() })
+      .exec();
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -230,8 +240,14 @@ export class UserService {
     if (!userId || !Types.ObjectId.isValid(userId.toString())) {
       throw new NotFoundException('User not found');
     }
-    const projection = fields.reduce((acc, field) => ({ ...acc, [field]: 1 }), {});
-    const user = await this.userModel.findById(userId, projection).lean().exec();
+    const projection = fields.reduce(
+      (acc, field) => ({ ...acc, [field]: 1 }),
+      {},
+    );
+    const user = await this.userModel
+      .findById(userId, projection)
+      .lean()
+      .exec();
     if (!user) {
       throw new NotFoundException('User not found');
     }

@@ -19,15 +19,18 @@ export class Car extends Document {
   @Prop({
     type: String,
     required: [true, 'Le modèle est obligatoire'],
-    trim: true
+    trim: true,
   })
   carmodel: string;
 
   @Prop({
     type: Number,
-    required: [true, 'L\'année est obligatoire'],
-    min: [1900, 'L\'année doit être supérieure à 1900'],
-    max: [new Date().getFullYear() + 1, 'L\'année ne peut pas être dans le futur']
+    required: [true, "L'année est obligatoire"],
+    min: [1900, "L'année doit être supérieure à 1900"],
+    max: [
+      new Date().getFullYear() + 1,
+      "L'année ne peut pas être dans le futur",
+    ],
   })
   year: number;
 
@@ -35,7 +38,7 @@ export class Car extends Document {
     type: Number,
     required: [true, 'La capacité est obligatoire'],
     min: [1, 'La capacité doit être au moins 1'],
-    max: [100, 'La capacité ne peut pas dépasser 100 personnes']
+    max: [100, 'La capacité ne peut pas dépasser 100 personnes'],
   })
   capacity: number;
 
@@ -43,7 +46,7 @@ export class Car extends Document {
     type: String,
     required: [true, 'Le nom du chauffeur est obligatoire'],
     trim: true,
-    minlength: [2, 'Le nom du chauffeur doit contenir au moins 2 caractères']
+    minlength: [2, 'Le nom du chauffeur doit contenir au moins 2 caractères'],
   })
   driverName: string;
 

@@ -1,15 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum Role {
-  FOUNDER = "FOUNDER",
-  DIRECTOR = "DIRECTOR",
-  ACCOUNTANT = "ACCOUNTANT",
-  TEACHER = "TEACHER",
-  EDUCATOR = "EDUCATOR",
-  CANTEEN_MANAGER = "CANTEEN_MANAGER",
-  DRIVER = "DRIVER",
-  PARENT = "PARENT",
-  COGES_PRESIDENT = "COGES_PRESIDENT"
+  FOUNDER = 'FOUNDER',
+  DIRECTOR = 'DIRECTOR',
+  ACCOUNTANT = 'ACCOUNTANT',
+  TEACHER = 'TEACHER',
+  EDUCATOR = 'EDUCATOR',
+  CANTEEN_MANAGER = 'CANTEEN_MANAGER',
+  DRIVER = 'DRIVER',
+  PARENT = 'PARENT',
+  COGES_PRESIDENT = 'COGES_PRESIDENT',
 }
 
 // Remplacez ceci par la vraie liste de profils si besoin

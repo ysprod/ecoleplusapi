@@ -7,14 +7,17 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 
 @Module({
-    imports: [forwardRef(() => UserModule), PassportModule, JwtModule.register({
-        global: true,
-        signOptions: { expiresIn: '30d' },
-        secret: process.env.JWT_SECRET || 'secretKey',
+  imports: [
+    forwardRef(() => UserModule),
+    PassportModule,
+    JwtModule.register({
+      global: true,
+      signOptions: { expiresIn: '30d' },
+      secret: process.env.JWT_SECRET || 'secretKey',
     }),
-    ],
-    providers: [AuthService, JwtStrategy],
-    controllers: [AuthController],
-    exports: [AuthService,JwtStrategy],
+  ],
+  providers: [AuthService, JwtStrategy],
+  controllers: [AuthController],
+  exports: [AuthService, JwtStrategy],
 })
-export class AuthModule { } 
+export class AuthModule {}

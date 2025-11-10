@@ -9,7 +9,7 @@ import { SchoolModule } from '../school/school.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Cantine.name, schema: CantineSchema }]),
-    SchoolModule
+    SchoolModule,
   ],
   providers: [CantineRepository, CantineService],
   controllers: [CantineController],

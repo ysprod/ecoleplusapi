@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, Request } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+  Request,
+} from '@nestjs/common';
 import { StudentResponseDto } from 'src/students/dto/student-response.dto';
 import { UserDto } from 'src/user/dto/user.dto';
 import { ParentResponseDto } from './dto/parent-response.dto';
@@ -7,11 +16,11 @@ import { ParentService } from './parent.service';
 
 @Controller('parents')
 export class ParentController {
-  constructor(private readonly parentService: ParentService) { }
+  constructor(private readonly parentService: ParentService) {}
 
   @Post()
-  async create(@Body() createParentDto: any): Promise<ParentResponseDto > {
-     return this.parentService.create(createParentDto);
+  async create(@Body() createParentDto: any): Promise<ParentResponseDto> {
+    return this.parentService.create(createParentDto);
   }
 
   @Get('me')
@@ -36,7 +45,10 @@ export class ParentController {
   }
 
   @Get('by-user/:userId/children')
-  async getChildrenByUserId(@Param('userId') userId: string): Promise<StudentResponseDto[]> {
+  async getChildrenByUserId(
+    @Param('userId') userId: string,
+  ): Promise<StudentResponseDto[]> {
+    console.log('Fetching children for userId:', userId);
     return this.parentService.getChildrenByUserId(userId);
   }
 
@@ -45,7 +57,10 @@ export class ParentController {
     @Param('id') id: string,
     @Body() parentToStudentDto: ParentToStudentDto,
   ): Promise<ParentResponseDto> {
-    return this.parentService.addStudentToParent(id, parentToStudentDto.studentId);
+    return this.parentService.addStudentToParent(
+      id,
+      parentToStudentDto.studentId,
+    );
   }
 
   @Delete(':id/children/:studentId')
@@ -62,7 +77,10 @@ export class ParentController {
     @Body() parentToStudentDto: ParentToStudentDto,
   ): Promise<ParentResponseDto> {
     const parent = await this.parentService.findByUserId(req.user.id);
-    return this.parentService.addStudentToParent(parent.id, parentToStudentDto.studentId);
+    return this.parentService.addStudentToParent(
+      parent.id,
+      parentToStudentDto.studentId,
+    );
   }
 
   @Delete('me/children/:studentId')
@@ -80,7 +98,9 @@ export class ParentController {
     @Query('fields') fields?: string,
   ): Promise<UserDto | null> {
     // fields peut être une chaîne séparée par des virgules, ex: "email,firstName"
-    const fieldsArray = fields ? fields.split(',') : ['email', 'firstName', 'lastName', 'role'];
+    const fieldsArray = fields
+      ? fields.split(',')
+      : ['email', 'firstName', 'lastName', 'role'];
     return this.parentService.getUserInfo(parentId, fieldsArray);
   }
 }

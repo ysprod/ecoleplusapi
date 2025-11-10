@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ScheduleService } from './schedule.service';
 import { ScheduleEventDto } from './dto/schedule-event.dto';
@@ -24,7 +32,7 @@ export class ScheduleController {
   }
 
   @Delete('class/:classId')
-  @ApiOperation({ summary: 'Supprimer tous les emplois du temps d\'une classe' })
+  @ApiOperation({ summary: "Supprimer tous les emplois du temps d'une classe" })
   deleteByClass(@Param('classId') classId: string) {
     return this.scheduleService.deleteByClassId(classId);
   }

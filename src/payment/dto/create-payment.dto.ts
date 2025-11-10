@@ -5,7 +5,7 @@ export class CreatePaymentDto {
   type: PaymentType;
   status: PaymentStatus;
   student: string; // studentId
-  parent: string;  // parentId
+  parent: string; // parentId
   dueDate: Date | string;
   paidAt?: Date | string;
 }

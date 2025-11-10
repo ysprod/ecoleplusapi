@@ -20,11 +20,13 @@ export class SupportService {
           ${matricule ? `<p><strong>Matricule:</strong> ${matricule}</p>` : ''}
           <p><strong>Message:</strong></p>
           <p>${message}</p>
-        `
+        `,
       });
       return { success: true };
     } catch (error) {
-      throw new InternalServerErrorException('Erreur lors de l\'envoi du message');
+      throw new InternalServerErrorException(
+        "Erreur lors de l'envoi du message",
+      );
     }
   }
 }

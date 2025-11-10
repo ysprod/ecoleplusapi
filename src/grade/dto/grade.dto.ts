@@ -32,8 +32,8 @@ export class GradeDto {
   updatedAt?: string;
 
   @ApiPropertyOptional()
-  studentId?:string;
+  studentId?: string;
 
   @ApiPropertyOptional()
-  teacherId?:string;    
+  teacherId?: string;
 }

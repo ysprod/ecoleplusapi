@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, ConflictException, Inject, forwardRef } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Teacher } from './schemas/teacher.schema';
@@ -20,10 +26,11 @@ import { ClassDetail } from 'src/class/dto/class-detail.dto';
 export class TeacherService {
   constructor(
     @InjectModel(Teacher.name) private teacherModel: Model<Teacher>,
-    @Inject(forwardRef(() => SchoolService)) private schoolService: SchoolService,
+    @Inject(forwardRef(() => SchoolService))
+    private schoolService: SchoolService,
     @Inject(forwardRef(() => ClassService)) private classService: ClassService,
     @Inject(forwardRef(() => UserService)) private userService: UserService,
-  ) { }
+  ) {}
 
   private mapToResponseDto(teacher: Teacher): TeacherResponseDto {
     return {
@@ -46,7 +53,9 @@ export class TeacherService {
     };
   }
 
-  async create(createTeacherDto: CreateTeacherDto): Promise<TeacherResponseDto> {
+  async create(
+    createTeacherDto: CreateTeacherDto,
+  ): Promise<TeacherResponseDto> {
     const existingTeacher = await this.teacherModel.findOne({
       matricule: createTeacherDto.matricule,
     });
@@ -55,12 +64,16 @@ export class TeacherService {
     }
 
     const user = await this.userService.create({
-      email: createTeacherDto.email || `${createTeacherDto.matricule}@school.com`,
+      email:
+        createTeacherDto.email || `${createTeacherDto.matricule}@school.com`,
       firstName: createTeacherDto.firstName,
       lastName: createTeacherDto.lastName,
       role: 'teacher',
       profileType: 'teacher',
-      password: createTeacherDto.password || createTeacherDto.matricule || 'changeme123',
+      password:
+        createTeacherDto.password ||
+        createTeacherDto.matricule ||
+        'changeme123',
     });
 
     const createdTeacher = new this.teacherModel({
@@ -77,7 +90,7 @@ export class TeacherService {
       .find()
       .populate('user classes schools grades')
       .exec();
-    return teachers.map(teacher => this.mapToResponseDto(teacher));
+    return teachers.map((teacher) => this.mapToResponseDto(teacher));
   }
 
   async findById(id: string): Promise<TeacherResponseDto> {
@@ -123,10 +136,9 @@ export class TeacherService {
       .populate('user schools grades')
       .populate({
         path: 'classes',
-        populate: { path: 'school' }
+        populate: { path: 'school' },
       })
       .exec();
-
 
     if (!teacher) {
       throw new NotFoundException('Teacher not found');
@@ -199,11 +211,7 @@ export class TeacherService {
     }
 
     const updatedTeacher = await this.teacherModel
-      .findByIdAndUpdate(
-        teacherId,
-        { subjects },
-        { new: true },
-      )
+      .findByIdAndUpdate(teacherId, { subjects }, { new: true })
       .populate('user classes schools grades')
       .exec();
 
@@ -243,7 +251,7 @@ export class TeacherService {
         total,
         totalPages: Math.ceil(total / limit),
       },
-      teachers: teachers.map(teacher => this.mapToResponseDto(teacher)),
+      teachers: teachers.map((teacher) => this.mapToResponseDto(teacher)),
     };
   }
 
@@ -273,33 +281,45 @@ export class TeacherService {
     return this.mapToResponseDto(teacher);
   }
 
-  async getEducatorsByUserIds(userIds: string[]): Promise<TeacherResponseDto[]> {
+  async getEducatorsByUserIds(
+    userIds: string[],
+  ): Promise<TeacherResponseDto[]> {
     if (!userIds || userIds.length === 0) return [];
     const teachers = await this.teacherModel
       .find({ user: { $in: userIds } })
       .populate('user classes schools grades')
       .exec();
-    return teachers.map(teacher => this.mapToResponseDto(teacher));
+    return teachers.map((teacher) => this.mapToResponseDto(teacher));
   }
 
-  async assignTeacherToClass(data: TeacherAssignmentRequestDto): Promise<ClassDetail[]> {
-   
+  async assignTeacherToClass(
+    data: TeacherAssignmentRequestDto,
+  ): Promise<ClassDetail[]> {
     // Appelle le service d’assignation (à adapter selon ton architecture)
     // Recherche du teacher par matricule (string) ou par ObjectId
-   let teacher: Teacher | null = await this.teacherModel.findOne({ matricule: data.matricule });
-     
+    const teacher: Teacher | null = await this.teacherModel.findOne({
+      matricule: data.matricule,
+    });
+
     if (!teacher) {
       throw new NotFoundException('Enseignant non trouvé');
     }
 
-    await this.classService.addTeacherToClass(data.classId, teacher._id.toString());
-    await this.schoolService.addTeacherIfNotExists(data.schoolId, teacher._id.toString());
+    await this.classService.addTeacherToClass(
+      data.classId,
+      teacher._id.toString(),
+    );
+    await this.schoolService.addTeacherIfNotExists(
+      data.schoolId,
+      teacher._id.toString(),
+    );
     await this.teacherModel.findByIdAndUpdate(teacher._id, {
       $addToSet: { classes: data.classId, schools: data.schoolId },
     });
 
-    return this.classService.getTeacherClasses(teacher._id.toString(), data.schoolId);
+    return this.classService.getTeacherClasses(
+      teacher._id.toString(),
+      data.schoolId,
+    );
   }
-
-
 }

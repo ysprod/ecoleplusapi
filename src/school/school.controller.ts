@@ -1,5 +1,15 @@
 import {
-  Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, NotFoundException, Redirect,
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  NotFoundException,
+  Redirect,
 } from '@nestjs/common';
 import { SchoolService } from './school.service';
 import { CreateSchoolDto } from './dto/create-school.dto';
@@ -8,12 +18,11 @@ import { SchoolResponseDto } from './dto/school-response.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { GetUser } from '../auth/get-user.decorator';
 import { User } from '../user/schemas/user.schema';
- 
 
 @Controller('schools')
 // @UseGuards(JwtAuthGuard)
 export class SchoolController {
-  constructor(private readonly schoolService: SchoolService) { }
+  constructor(private readonly schoolService: SchoolService) {}
 
   // Bridge endpoint to support frontend call /schools/educators?schoolId=...&niveau=...
   // Must be declared BEFORE the dynamic ":id" route to avoid it being captured by ":id".
@@ -26,7 +35,9 @@ export class SchoolController {
     const params = new URLSearchParams();
     if (schoolId) params.set('schoolId', schoolId);
     if (niveau) params.set('niveau', niveau);
-    return { url: `/educators/classes${params.toString() ? `?${params.toString()}` : ''}` };
+    return {
+      url: `/educators/classes${params.toString() ? `?${params.toString()}` : ''}`,
+    };
   }
 
   @Post()

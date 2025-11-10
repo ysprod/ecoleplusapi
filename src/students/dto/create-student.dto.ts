@@ -1,5 +1,14 @@
 // src/student/dto/create-student.dto.ts
-import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsArray, IsBoolean, IsNumber } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsArray,
+  IsBoolean,
+  IsNumber,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Gender, BloodGroup } from '../schemas/student.schema';
 
@@ -43,11 +52,6 @@ export class CreateStudentDto {
   @IsString()
   @IsOptional()
   parentContact?: string;
-
-  @ApiProperty({ required: false })
-  @IsString()
-  @IsOptional()
-  class?: string;
 
   @ApiProperty({ required: false })
   @IsString()

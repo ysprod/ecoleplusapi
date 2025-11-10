@@ -1,4 +1,3 @@
-
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -12,14 +11,18 @@ import { DepartementDTO } from './dtos/departement.dto';
  */
 export interface IRegionDepartementRepository {
   getRegions(): Promise<{ [key: string]: RegionDTO }>;
-  getDepartements(): Promise<{ [regionId: string]: { [depId: string]: DepartementDTO } }>;
+  getDepartements(): Promise<{
+    [regionId: string]: { [depId: string]: DepartementDTO };
+  }>;
 }
 
 /**
  * Repository for accessing regions and departements, returning data in frontend-compatible format.
  */
 @Injectable()
-export class RegionDepartementRepository implements IRegionDepartementRepository {
+export class RegionDepartementRepository
+  implements IRegionDepartementRepository
+{
   constructor(
     @InjectModel(Region.name) private regionModel: Model<Region>,
     @InjectModel(Departement.name) private departementModel: Model<Departement>,
@@ -43,10 +46,13 @@ export class RegionDepartementRepository implements IRegionDepartementRepository
   /**
    * Returns all departements as an object: { [regionId]: { [depId]: departement } }
    */
-  async getDepartements(): Promise<{ [regionId: string]: { [depId: string]: DepartementDTO } }> {
+  async getDepartements(): Promise<{
+    [regionId: string]: { [depId: string]: DepartementDTO };
+  }> {
     const departements = await this.departementModel.find().lean();
     // Map to { [regionId]: { [depId]: departement } }
-    const result: { [regionId: string]: { [depId: string]: DepartementDTO } } = {};
+    const result: { [regionId: string]: { [depId: string]: DepartementDTO } } =
+      {};
     for (const dep of departements) {
       const regionId = dep.b; // 'b' is regionId in your data
       const depId = dep.d; // 'd' is departementId in your data

@@ -33,4 +33,4 @@ import { ParentModule } from '../parent/parent.module';
   providers: [UserService, AuthService, LocalStrategy, JwtStrategy],
   exports: [UserService, AuthService],
 })
-export class UserModule { }
+export class UserModule {}

@@ -1,5 +1,14 @@
-
-import { Controller, Get, Post, Body, Param, Query, Patch, Delete, UseGuards, } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  Patch,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { ClassService } from './class.service';
 import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
@@ -35,7 +44,7 @@ export class ClassController {
     return await this.classService.getSchoolStudents(schoolId, options);
   }
 
-  constructor(private readonly classService: ClassService) { }
+  constructor(private readonly classService: ClassService) {}
 
   @Post()
   async create(
@@ -56,7 +65,6 @@ export class ClassController {
   async findById(@Param('id') id: string): Promise<ClassResponseDto> {
     return this.classService.findById(id);
   }
-
 
   @Patch(':id')
   async update(
@@ -125,7 +133,11 @@ export class ClassController {
       throw new Error('schoolId is required and must be a valid ObjectId');
     }
     // À adapter selon votre service et DTO
-    const classes = await this.classService.getAcademicClasses(schoolId, classType, niveau);
+    const classes = await this.classService.getAcademicClasses(
+      schoolId,
+      classType,
+      niveau,
+    );
     return { data: classes };
   }
 
@@ -141,8 +153,12 @@ export class ClassController {
   async getClassDetails(@Param('id') id: string) {
     // Récupère la classe, l'école et les élèves
     const classe = await this.classService.findById(id);
-    const school = classe ? await this.classService.getSchoolForClass(id) : null;
-    const students = classe ? await this.classService.getStudentsForClass(id) : [];
+    const school = classe
+      ? await this.classService.getSchoolForClass(id)
+      : null;
+    const students = classe
+      ? await this.classService.getStudentsForClass(id)
+      : [];
     return { classe, school, students };
   }
 
@@ -153,10 +169,10 @@ export class ClassController {
   @Get(':id/teachers')
   async getClassTeachers(@Param('id') id: string) {
     const teachers = await this.classService.getTeachersForClass(id);
-    return { 
+    return {
       classId: id,
       teachers,
-      count: teachers.length 
+      count: teachers.length,
     };
   }
 
@@ -170,7 +186,7 @@ export class ClassController {
     return {
       classId: id,
       students,
-      count: students.length
+      count: students.length,
     };
   }
 }

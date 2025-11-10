@@ -6,7 +6,10 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const envOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean);
+  const envOrigins = (process.env.ALLOWED_ORIGINS || '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
   const defaultOrigins = [
     'http://localhost:3000',
     'http://localhost:3001',
@@ -23,25 +26,30 @@ async function bootstrap() {
         allowedOrigins.includes(origin) ||
         /localhost:\d+$/.test(origin || '') ||
         /https:\/\/.*\.vercel\.app$/.test(origin || '');
-      return isAllowed ? callback(null, true) : callback(new Error('Not allowed by CORS'));
+      return isAllowed
+        ? callback(null, true)
+        : callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+    allowedHeaders:
+      'Origin, X-Requested-With, Content-Type, Accept, Authorization',
     exposedHeaders: 'Content-Disposition',
     preflightContinue: false,
     optionsSuccessStatus: 204,
   });
 
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    transform: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('École Plus API')
     .setDescription('API de gestion scolaire pour École Plus')
-    .setVersion('1.0')    
+    .setVersion('1.0')
     .addBearerAuth()
     .addServer(process.env.API_URL || 'http://localhost:3001', 'Server')
     .build();

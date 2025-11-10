@@ -1,8 +1,5 @@
 // src/grade/grade.service.ts
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Grade, GradeDocument } from './schemas/grade.schema';
@@ -21,9 +18,11 @@ export class GradeService {
     @InjectModel(Grade.name) private gradeModel: Model<GradeDocument>,
     private studentService: StudentsService,
     private teacherService: TeacherService,
-  ) { }
+  ) {}
 
-  private async mapToResponseDto(grade: GradeDocument): Promise<GradeResponseDto> {
+  private async mapToResponseDto(
+    grade: GradeDocument,
+  ): Promise<GradeResponseDto> {
     await grade.populate([
       { path: 'student', select: '-password -refreshToken' },
       { path: 'teacher', select: '-password -refreshToken' },
@@ -57,8 +56,12 @@ export class GradeService {
       ...createGradeDto,
       student: new Types.ObjectId(createGradeDto.student),
       teacher: new Types.ObjectId(createGradeDto.teacher),
-      subject: createGradeDto.subject ? new Types.ObjectId(createGradeDto.subject) : undefined,
-      class: createGradeDto.class ? new Types.ObjectId(createGradeDto.class) : undefined,
+      subject: createGradeDto.subject
+        ? new Types.ObjectId(createGradeDto.subject)
+        : undefined,
+      class: createGradeDto.class
+        ? new Types.ObjectId(createGradeDto.class)
+        : undefined,
     });
 
     const savedGrade = await createdGrade.save();
@@ -80,7 +83,7 @@ export class GradeService {
       ])
       .exec();
 
-    return Promise.all(grades.map(grade => this.mapToResponseDto(grade)));
+    return Promise.all(grades.map((grade) => this.mapToResponseDto(grade)));
   }
 
   async deleteByStudentId(studentId: string): Promise<void> {

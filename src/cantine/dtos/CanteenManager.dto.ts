@@ -1,10 +1,8 @@
- 
-
 export interface CanteenManager {
   id: string;
   userId: string;
-//   user: UserDto;
-//   school: SchoolDto;
-//   schoolId: string;
-//   menus: MenuDTO[];
+  //   user: UserDto;
+  //   school: SchoolDto;
+  //   schoolId: string;
+  //   menus: MenuDTO[];
 }

@@ -6,13 +6,13 @@ import { TeacherController } from './teacher.controller';
 import { TeacherService } from './teacher.service';
 import { SchoolModule } from 'src/school/school.module';
 import { ClassModule } from 'src/class/class.module';
- 
+
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Teacher.name, schema: TeacherSchema }]),
     forwardRef(() => SchoolModule),
     forwardRef(() => UserModule),
-    forwardRef(() => ClassModule),  
+    forwardRef(() => ClassModule),
   ],
   controllers: [TeacherController],
   providers: [TeacherService],

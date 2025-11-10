@@ -1,7 +1,7 @@
 // src/student/dto/paginated-students.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 import { StudentResponseDto } from './student-response.dto';
- 
+
 export class PaginationMetaDto {
   @ApiProperty()
   page: number;

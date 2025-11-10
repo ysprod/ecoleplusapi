@@ -6,4 +6,4 @@ export class ValidationService {
       throw new Error('INVALID_OBJECT_ID');
     }
   }
-} 
+}

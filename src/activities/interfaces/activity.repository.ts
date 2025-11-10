@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose'; 
+import { Model } from 'mongoose';
 import { ActivityCreateDto } from '../dtos/activity-create.dto';
 import { ActivityUpdateDto } from '../dtos/activity-update.dto';
 import { Activity } from '../entities/activity.entity';
 import { IActivityRepository } from './IActivityRepository';
- 
+
 @Injectable()
 export class ActivityRepository implements IActivityRepository {
   constructor(
@@ -27,9 +27,7 @@ export class ActivityRepository implements IActivityRepository {
 
   async updateById(updateData: ActivityUpdateDto): Promise<Activity | null> {
     const { id, ...data } = updateData;
-    return this.activityModel
-      .findByIdAndUpdate(id, data, { new: true })
-      .exec();
+    return this.activityModel.findByIdAndUpdate(id, data, { new: true }).exec();
   }
 
   async deleteById(id: string): Promise<void> {

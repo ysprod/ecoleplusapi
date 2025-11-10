@@ -5,7 +5,6 @@ import { CogesController } from './coges.controller';
 import { Coges, CogesSchema } from './schemas/coges.schema';
 import { User, UserSchema } from 'src/user/schemas/user.schema';
 import { Parent, ParentSchema } from 'src/parent/schemas/parent.schema';
- 
 
 @Module({
   imports: [

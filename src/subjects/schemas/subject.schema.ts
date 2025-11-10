@@ -39,9 +39,9 @@ export class Subject extends Document {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Subject' }] })
   coRequisites?: Types.ObjectId[];
 
-  @Prop({ 
-    enum: ['active', 'inactive', 'archived'], 
-    default: 'active' 
+  @Prop({
+    enum: ['active', 'inactive', 'archived'],
+    default: 'active',
   })
   status: string;
 }

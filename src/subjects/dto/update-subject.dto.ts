@@ -1,5 +1,15 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { IsString, IsNumber, IsBoolean, IsOptional, IsEnum, IsArray, Min, Max, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsBoolean,
+  IsOptional,
+  IsEnum,
+  IsArray,
+  Min,
+  Max,
+  MaxLength,
+} from 'class-validator';
 import { Transform } from 'class-transformer';
 import { CreateSubjectDto } from './create-subject.dto';
 

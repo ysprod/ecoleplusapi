@@ -1,11 +1,15 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { Types } from 'mongoose';
 import { CarRepository } from './car.repository';
 import { CarFilterDto } from './dtos/car-filter.dto';
 import { CarDto } from './dtos/car.dto';
 import { CreateCarDto } from './dtos/create-car.dto';
 import { UpdateCarDto } from './dtos/update-car.dto';
- 
+
 @Injectable()
 export class CarService {
   constructor(private readonly repository: CarRepository) {} // Injectez la classe concrète
@@ -24,13 +28,13 @@ export class CarService {
     }
 
     const objectId = new Types.ObjectId(data.id);
-    
+
     if (!(await this.repository.exists(objectId))) {
       throw new NotFoundException('Voiture non trouvée');
     }
 
     const updatedCar = await this.repository.updateById(objectId, data);
-    
+
     if (!updatedCar) {
       throw new NotFoundException('Voiture non trouvée après mise à jour');
     }
@@ -44,7 +48,7 @@ export class CarService {
     }
 
     const objectId = new Types.ObjectId(id);
-    
+
     if (!(await this.repository.exists(objectId))) {
       throw new NotFoundException('Voiture non trouvée');
     }

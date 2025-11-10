@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { CogesService } from './coges.service';
 import { CreateCogesDto } from './dto/create-coges.dto';
@@ -6,7 +14,7 @@ import { CreateCogesDto } from './dto/create-coges.dto';
 @ApiTags('coges')
 @Controller('coges')
 export class CogesController {
-  constructor(private readonly cogesService: CogesService) { }
+  constructor(private readonly cogesService: CogesService) {}
 
   @Get('search')
   @ApiOperation({ summary: 'Rechercher un parent par téléphone' })
@@ -15,7 +23,7 @@ export class CogesController {
   }
 
   @Get('school')
-  @ApiOperation({ summary: 'Obtenir le COGES d\'une école' })
+  @ApiOperation({ summary: "Obtenir le COGES d'une école" })
   findBySchoolId(@Query('schoolId') schoolId: string) {
     return this.cogesService.findBySchoolId(schoolId);
   }
@@ -28,12 +36,15 @@ export class CogesController {
 
   @Post(':cogesId/add-parent/:parentId')
   @ApiOperation({ summary: 'Ajouter un parent au COGES' })
-  addParent(@Param('cogesId') cogesId: string, @Param('parentId') parentId: string) {
+  addParent(
+    @Param('cogesId') cogesId: string,
+    @Param('parentId') parentId: string,
+  ) {
     return this.cogesService.addParent(cogesId, parentId);
   }
 
   @Delete('school/:schoolId')
-  @ApiOperation({ summary: 'Supprimer le COGES d\'une école' })
+  @ApiOperation({ summary: "Supprimer le COGES d'une école" })
   deleteBySchoolId(@Param('schoolId') schoolId: string) {
     return this.cogesService.deleteBySchoolId(schoolId);
   }

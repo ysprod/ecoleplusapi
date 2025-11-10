@@ -6,7 +6,7 @@ import { CreateAccountingDto } from './dto/create-accounting.dto';
 import { UpdateAccountingDto } from './dto/update-accounting.dto';
 import { GetTransactionsQueryDto } from './dto/get-transactions-query.dto';
 import { AuthService } from 'src/auth/auth.service';
- 
+
 @Injectable()
 export class AccountingService {
   constructor(
@@ -19,7 +19,10 @@ export class AccountingService {
     return entry.save();
   }
 
-  async update(entryData: UpdateAccountingDto, userId: string): Promise<Accounting> {
+  async update(
+    entryData: UpdateAccountingDto,
+    userId: string,
+  ): Promise<Accounting> {
     const updated = await this.accountingModel.findOneAndUpdate(
       { _id: entryData.id, user: userId },
       entryData,
@@ -32,10 +35,10 @@ export class AccountingService {
   }
 
   async getTransactions(query: GetTransactionsQueryDto): Promise<Accounting[]> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dbQuery: any = { school: query.schoolId };
     if (query.type && query.type !== 'all') dbQuery.type = query.type;
-    if (query.category && query.category !== 'all') dbQuery.category = query.category;
+    if (query.category && query.category !== 'all')
+      dbQuery.category = query.category;
     if (query.startDate || query.endDate) {
       dbQuery.date = {};
       if (query.startDate) dbQuery.date.$gte = new Date(query.startDate);
@@ -44,7 +47,7 @@ export class AccountingService {
     if (query.search) {
       dbQuery.$or = [
         { description: { $regex: query.search, $options: 'i' } },
-        { reference: { $regex: query.search, $options: 'i' } }
+        { reference: { $regex: query.search, $options: 'i' } },
       ];
     }
 

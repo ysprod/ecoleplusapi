@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { ClassDto } from 'src/classes/dto/class.dto';
- // import { ClassDetail } from '../../classes/dto/class-detail.dto'; // Décommente si tu as ce DTO
+// import { ClassDetail } from '../../classes/dto/class-detail.dto'; // Décommente si tu as ce DTO
 
 export class ScheduleEventDTO {
   @ApiProperty()

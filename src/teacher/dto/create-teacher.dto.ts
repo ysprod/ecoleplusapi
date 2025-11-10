@@ -1,4 +1,11 @@
-import { IsDate, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsDate,
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateTeacherDto {
@@ -22,9 +29,9 @@ export class CreateTeacherDto {
   @IsOptional()
   email?: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     enum: ['masculin', 'feminin', 'autre', 'female', 'male', 'MALE', 'FEMALE'],
-    default: 'masculin'
+    default: 'masculin',
   })
   @IsEnum(['masculin', 'feminin', 'autre', 'female', 'male', 'MALE', 'FEMALE'])
   @IsOptional()

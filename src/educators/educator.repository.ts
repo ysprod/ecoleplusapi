@@ -16,27 +16,32 @@ export class EducatorRepository {
       name: classDoc.name,
       level: classDoc.level,
       school: classDoc.school?.toString?.(),
-      educator: classDoc.educator ? {
-        _id: classDoc.educator._id?.toString?.(),
-        firstName: classDoc.educator.firstName,
-        lastName: classDoc.educator.lastName,
-        email: classDoc.educator.email
-      } : null,
-  
+      educator: classDoc.educator
+        ? {
+            _id: classDoc.educator._id?.toString?.(),
+            firstName: classDoc.educator.firstName,
+            lastName: classDoc.educator.lastName,
+            email: classDoc.educator.email,
+          }
+        : null,
     };
   }
 
-  async getClassesWithEducators(schoolId: string, niveau?: string): Promise<EducatorClassDto[]> {
+  async getClassesWithEducators(
+    schoolId: string,
+    niveau?: string,
+  ): Promise<EducatorClassDto[]> {
     if (!schoolId || !Types.ObjectId.isValid(schoolId)) return [];
-    
+
     const query: Record<string, any> = {
       school: new Types.ObjectId(schoolId),
-      educator: { $exists: true, $ne: null }
+      educator: { $exists: true, $ne: null },
     };
-    
+
     if (niveau) query.level = niveau;
 
-    const classes = await this.classModel.find(query)
+    const classes = await this.classModel
+      .find(query)
       .populate({ path: 'educator', select: 'firstName lastName email _id' })
       .lean()
       .exec();
@@ -46,9 +51,10 @@ export class EducatorRepository {
 
   async getClassesByEducator(educatorId: string): Promise<EducatorClassDto[]> {
     if (!educatorId || !Types.ObjectId.isValid(educatorId)) return [];
-    
+
     const query = { educator: new Types.ObjectId(educatorId) };
-    const classes = await this.classModel.find(query)
+    const classes = await this.classModel
+      .find(query)
       .select('name level school educator')
       .lean()
       .exec();
@@ -58,9 +64,14 @@ export class EducatorRepository {
 
   async getClassEducator(classId: string): Promise<EducatorClassDto | null> {
     if (!classId || !Types.ObjectId.isValid(classId)) return null;
-    
-    const classItem = await this.classModel.findById(classId)
-      .populate({ path: 'educator', model: 'User', select: 'firstName lastName email _id' })
+
+    const classItem = await this.classModel
+      .findById(classId)
+      .populate({
+        path: 'educator',
+        model: 'User',
+        select: 'firstName lastName email _id',
+      })
       .select('educator')
       .lean()
       .exec();

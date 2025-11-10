@@ -1,4 +1,10 @@
-import { Controller, Get, Query, Param, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  Param,
+  NotFoundException,
+} from '@nestjs/common';
 import { EducatorService } from './educator.service';
 
 @Controller('educators')
@@ -10,15 +16,19 @@ export class EducatorController {
     @Query('schoolId') schoolId: string,
     @Query('niveau') niveau: string,
   ) {
-
     // Vérifie les paramètres
     if (!schoolId || !niveau) {
       throw new NotFoundException('schoolId and niveau are required');
     }
     // Appelle le service pour récupérer les données
-    const classes = await this.educatorService.findClassesBySchoolAndNiveau(schoolId, niveau);
+    const classes = await this.educatorService.findClassesBySchoolAndNiveau(
+      schoolId,
+      niveau,
+    );
     if (!classes || classes.length === 0) {
-      throw new NotFoundException('No classes found for this school and niveau');
+      throw new NotFoundException(
+        'No classes found for this school and niveau',
+      );
     }
     return { data: { classes } };
   }
@@ -31,9 +41,14 @@ export class EducatorController {
     if (!schoolId || !niveau) {
       throw new NotFoundException('schoolId and niveau are required');
     }
-    const classes = await this.educatorService.findClassesBySchoolAndNiveau(schoolId, niveau);
+    const classes = await this.educatorService.findClassesBySchoolAndNiveau(
+      schoolId,
+      niveau,
+    );
     if (!classes || classes.length === 0) {
-      throw new NotFoundException('No classes found for this school and niveau');
+      throw new NotFoundException(
+        'No classes found for this school and niveau',
+      );
     }
     return { data: { classes } };
   }

@@ -64,8 +64,14 @@ export class School {
 
   @Prop({
     type: {
-      enseignants: { type: [{ type: Types.ObjectId, ref: 'Teacher' }], default: [] },
-      educateurs: { type: [{ type: Types.ObjectId, ref: 'Educator' }], default: [] },
+      enseignants: {
+        type: [{ type: Types.ObjectId, ref: 'Teacher' }],
+        default: [],
+      },
+      educateurs: {
+        type: [{ type: Types.ObjectId, ref: 'Educator' }],
+        default: [],
+      },
       coges: { type: [{ type: Types.ObjectId, ref: 'Coges' }], default: [] },
     },
     default: { enseignants: [], educateurs: [], coges: [] },
@@ -94,7 +100,10 @@ export class School {
     type: {
       transport: { montant: Number, devise: { type: String, default: 'FCFA' } },
       activites: { montant: Number, devise: { type: String, default: 'FCFA' } },
-      cotisationCoges: { montant: Number, devise: { type: String, default: 'FCFA' } },
+      cotisationCoges: {
+        montant: Number,
+        devise: { type: String, default: 'FCFA' },
+      },
     },
     default: {
       transport: { montant: 0, devise: 'FCFA' },

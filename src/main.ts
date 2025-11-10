@@ -16,24 +16,40 @@ async function bootstrap() {
     'http://localhost:3001/api/docs',
     'http://localhost:3001/api',
     'https://ecoleplus.vercel.app',
+    'https://ecoleplus-3464u432f-yaya-sidibes-projects.vercel.app', // Production actuelle
   ];
   const allowedOrigins = envOrigins.length ? envOrigins : defaultOrigins;
 
   app.enableCors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true); // Allow non-browser clients (Postman, curl)
-      const isAllowed =
-        allowedOrigins.includes(origin) ||
-        /localhost:\d+$/.test(origin || '') ||
-        /https:\/\/.*\.vercel\.app$/.test(origin || '');
+      
+      // Vérifier les origines exactes
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      
+      // Vérifier les patterns regex
+      const allowedPatterns = [
+        /^http:\/\/localhost:\d+$/, // localhost avec n'importe quel port
+        /^https:\/\/.*\.vercel\.app$/, // Tous les domaines Vercel
+        /^https:\/\/.*-yaya-sidibes-projects\.vercel\.app$/, // Previews Vercel spécifiques
+      ];
+      
+      const isAllowed = allowedPatterns.some(pattern => pattern.test(origin || ''));
       return isAllowed
         ? callback(null, true)
         : callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders:
-      'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Origin',
+      'X-Requested-With',
+      'Content-Type',
+      'Accept',
+      'Authorization',
+    ],
     exposedHeaders: 'Content-Disposition',
     preflightContinue: false,
     optionsSuccessStatus: 204,

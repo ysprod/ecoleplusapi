@@ -1,4 +1,4 @@
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Inject, forwardRef, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { UserService } from 'src/user/user.service';
@@ -67,6 +67,38 @@ export class AuthService {
         role: 'user',
         profileType: 'other',
       });
+    }
+  }
+
+  /**
+   * Génère un access token et un refresh token
+   */
+  generateTokens(user: any) {
+    const payload = { sub: user.id || user._id, email: user.email, role: user.role };
+    return {
+      accessToken: this.jwtService.sign(payload, { expiresIn: '1h' }),
+      refreshToken: this.jwtService.sign(payload, { expiresIn: '7d' }),
+    };
+  }
+
+  /**
+   * Vérifie et décode un refresh token, puis génère de nouveaux tokens
+   */
+  async refreshTokens(refreshToken: string) {
+    try {
+      // 1. Vérifier la signature et l'expiration du refresh token
+      const payload = this.jwtService.verify(refreshToken);
+
+      // 2. Retrouver l'utilisateur depuis le payload
+      const user = await this.userService.findOne(payload.sub);
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      // 3. Générer de nouveaux tokens (rotation des refresh tokens)
+      return this.generateTokens(user);
+    } catch (error) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
     }
   }
 }

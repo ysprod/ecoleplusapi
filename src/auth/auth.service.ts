@@ -74,7 +74,12 @@ export class AuthService {
    * Génère un access token et un refresh token
    */
   generateTokens(user: any) {
-    const payload = { sub: user.id || user._id, email: user.email, role: user.role };
+    const userId = user._id?.toString() || user.id?.toString() || user._id || user.id;
+    const payload = { 
+      sub: userId, 
+      email: user.email, 
+      role: user.role 
+    };
     return {
       accessToken: this.jwtService.sign(payload, { expiresIn: '1h' }),
       refreshToken: this.jwtService.sign(payload, { expiresIn: '7d' }),
@@ -95,9 +100,18 @@ export class AuthService {
         throw new UnauthorizedException('User not found');
       }
 
-      // 3. Générer de nouveaux tokens (rotation des refresh tokens)
-      return this.generateTokens(user);
+  // 3. Convertir en objet plain si c'est un document Mongoose
+  const userObj = (user as any).toObject ? (user as any).toObject() : user;
+
+  // 4. Générer de nouveaux tokens (rotation des refresh tokens)
+  return this.generateTokens(userObj);
     } catch (error) {
+      // Log l'erreur pour debug (sera visible dans les logs Render)
+      console.error('Refresh token error:', error.message);
+      
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
   }

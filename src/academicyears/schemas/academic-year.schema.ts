@@ -34,6 +34,12 @@ export class AcademicYear {
 
   @Prop({ default: false, index: true })
   isArchived: boolean;
+
+  @Prop([{ type: Types.ObjectId, ref: 'Term' }])
+  terms: Types.ObjectId[];
+
+  @Prop({ default: 3 })
+  numberOfTerms: number;
 }
 
 export const AcademicYearSchema = SchemaFactory.createForClass(AcademicYear);

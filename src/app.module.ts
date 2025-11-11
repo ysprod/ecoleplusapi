@@ -23,6 +23,7 @@ import { SupportModule } from './support/support.module';
 import { CartoModule } from './carto/carto.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { CantineModule } from './cantine/cantine.module';
+import { TermModule } from './term/term.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { CantineModule } from './cantine/cantine.module';
     CartoModule,
     PermissionsModule,
     CantineModule,
+    TermModule,
   ],
   controllers: [AppController],
   providers: [],

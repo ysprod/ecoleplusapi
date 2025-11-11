@@ -1,7 +1,19 @@
-import { Controller, Post, Body, Get, Param, Patch, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  Patch,
+  Delete,
+} from '@nestjs/common';
 import { TermService } from './term.service';
 import { CreateTermDto } from './dto/create-term.dto';
-import { UpdateTermDto, UpdateTermStatusDto, PublishBulletinsDto } from './dto/update-term.dto';
+import {
+  UpdateTermDto,
+  UpdateTermStatusDto,
+  PublishBulletinsDto,
+} from './dto/update-term.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('Terms')
@@ -22,7 +34,9 @@ export class TermController {
   }
 
   @Get('by-year/:schoolId/:academicYearId')
-  @ApiOperation({ summary: 'Lister les trimestres par école et année académique' })
+  @ApiOperation({
+    summary: 'Lister les trimestres par école et année académique',
+  })
   findByYear(
     @Param('schoolId') schoolId: string,
     @Param('academicYearId') academicYearId: string,

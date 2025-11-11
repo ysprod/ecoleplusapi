@@ -74,6 +74,13 @@ export class Student {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Payment' }], default: [] })
   payments: Types.ObjectId[];
 
+  // Nouveaux champs
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Bulletin' }], default: [] })
+  bulletins: Types.ObjectId[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Conduct' }], default: [] })
+  conducts: Types.ObjectId[];
+
   @Prop()
   matricule: string;
 
@@ -175,6 +182,12 @@ export class Student {
 
   @Prop({ type: [String], default: [] })
   documents?: string[]; // URLs de documents divers
+
+  @Prop({ default: 0 })
+  averageGrade: number; // Moyenne générale de l'année
+
+  @Prop()
+  classRank: number; // Rang dans la classe
 
   // Ajout explicite des champs de timestamps
   createdAt?: Date;

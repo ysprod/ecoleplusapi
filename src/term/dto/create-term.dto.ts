@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsOptional, IsString, IsBoolean } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsMongoId,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsBoolean,
+} from 'class-validator';
 import { TermStatus, TermType } from '../schemas/term.schema';
 
 export class CreateTermDto {
@@ -33,7 +41,10 @@ export class CreateTermDto {
   @IsEnum(TermStatus)
   status?: TermStatus;
 
-  @ApiPropertyOptional({ description: 'Date du conseil de classe', example: '2025-12-25' })
+  @ApiPropertyOptional({
+    description: 'Date du conseil de classe',
+    example: '2025-12-25',
+  })
   @IsOptional()
   @IsDateString()
   councilDate?: string;

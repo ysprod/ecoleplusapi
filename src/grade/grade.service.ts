@@ -2,7 +2,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Grade, GradeDocument, GradeStatus, GradeType } from './schemas/grade.schema';
+import {
+  Grade,
+  GradeDocument,
+  GradeStatus,
+  GradeType,
+} from './schemas/grade.schema';
 import { CreateGradeDto } from './dto/create-grade.dto';
 import { GradeResponseDto } from './dto/grade-response.dto';
 import { TeacherService } from '../teacher/teacher.service';
@@ -40,8 +45,8 @@ export class GradeService {
       value: grade.value,
       outOf: grade.outOf,
       weight: grade.weight,
-      type: grade.type as GradeType,
-      status: grade.status as GradeStatus,
+      type: grade.type,
+      status: grade.status,
       comments: grade.comments,
       appreciation: grade.appreciation,
       subject: grade.subject as unknown as SubjectResponseDto,

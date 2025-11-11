@@ -1,9 +1,17 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Term, TermDocument, TermStatus } from './schemas/term.schema';
 import { CreateTermDto } from './dto/create-term.dto';
-import { UpdateTermDto, UpdateTermStatusDto, PublishBulletinsDto } from './dto/update-term.dto';
+import {
+  UpdateTermDto,
+  UpdateTermStatusDto,
+  PublishBulletinsDto,
+} from './dto/update-term.dto';
 
 @Injectable()
 export class TermService {
@@ -25,7 +33,9 @@ export class TermService {
       return await term.save();
     } catch (error: any) {
       if (error?.code === 11000) {
-        throw new BadRequestException('Un trimestre de ce type existe déjà pour cette école et année académique');
+        throw new BadRequestException(
+          'Un trimestre de ce type existe déjà pour cette école et année académique',
+        );
       }
       throw error;
     }
@@ -37,7 +47,10 @@ export class TermService {
 
   async findByYear(school: string, academicYear: string): Promise<Term[]> {
     return this.termModel
-      .find({ school: new Types.ObjectId(school), academicYear: new Types.ObjectId(academicYear) })
+      .find({
+        school: new Types.ObjectId(school),
+        academicYear: new Types.ObjectId(academicYear),
+      })
       .sort({ startDate: 1 })
       .exec();
   }
@@ -53,7 +66,9 @@ export class TermService {
       const start = new Date(dto.startDate);
       const end = new Date(dto.endDate);
       if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
-        throw new BadRequestException('startDate doit être antérieure à endDate');
+        throw new BadRequestException(
+          'startDate doit être antérieure à endDate',
+        );
       }
     }
     const term = await this.termModel
@@ -69,13 +84,17 @@ export class TermService {
   }
 
   async updateStatus(id: string, dto: UpdateTermStatusDto): Promise<Term> {
-    const term = await this.termModel.findByIdAndUpdate(id, { status: dto.status }, { new: true }).exec();
+    const term = await this.termModel
+      .findByIdAndUpdate(id, { status: dto.status }, { new: true })
+      .exec();
     if (!term) throw new NotFoundException('Trimestre introuvable');
     return term;
   }
 
   async publishBulletins(id: string, dto: PublishBulletinsDto): Promise<Term> {
-    const publishedAt = dto.publishedAt ? new Date(dto.publishedAt) : new Date();
+    const publishedAt = dto.publishedAt
+      ? new Date(dto.publishedAt)
+      : new Date();
     const term = await this.termModel
       .findByIdAndUpdate(
         id,

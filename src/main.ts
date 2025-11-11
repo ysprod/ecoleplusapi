@@ -23,20 +23,22 @@ async function bootstrap() {
   app.enableCors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true); // Allow non-browser clients (Postman, curl)
-      
+
       // Vérifier les origines exactes
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      
+
       // Vérifier les patterns regex
       const allowedPatterns = [
         /^http:\/\/localhost:\d+$/, // localhost avec n'importe quel port
         /^https:\/\/.*\.vercel\.app$/, // Tous les domaines Vercel
         /^https:\/\/.*-yaya-sidibes-projects\.vercel\.app$/, // Previews Vercel spécifiques
       ];
-      
-      const isAllowed = allowedPatterns.some(pattern => pattern.test(origin || ''));
+
+      const isAllowed = allowedPatterns.some((pattern) =>
+        pattern.test(origin || ''),
+      );
       return isAllowed
         ? callback(null, true)
         : callback(new Error('Not allowed by CORS'));

@@ -40,7 +40,7 @@ export class AuthController {
   }
 
   @Post('refresh')
-  @ApiOperation({ summary: 'Rafraîchir le token d\'accès' })
+  @ApiOperation({ summary: "Rafraîchir le token d'accès" })
   @ApiResponse({ status: 200, description: 'Tokens rafraîchis avec succès' })
   @ApiResponse({ status: 401, description: 'Refresh token invalide ou expiré' })
   async refresh(@Body() refreshTokenDto: RefreshTokenDto) {

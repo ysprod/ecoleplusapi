@@ -26,6 +26,7 @@ import { CantineModule } from './cantine/cantine.module';
 import { TermModule } from './term/term.module';
 import { ConductModule } from './conduct/conduct.module';
 import { RemarkModule } from './remark/remark.module';
+import { BulletinModule } from './bulletin/bulletin.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { RemarkModule } from './remark/remark.module';
     TermModule,
     ConductModule,
     RemarkModule,
+    BulletinModule,
   ],
   controllers: [AppController],
   providers: [],

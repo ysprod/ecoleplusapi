@@ -1,6 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
+export enum SubjectCategory {
+  SCIENCES = 'SCIENCES',
+  LANGUAGES = 'LANGUAGES',
+  HUMANITIES = 'HUMANITIES',
+  ARTS = 'ARTS',
+  PHYSICAL = 'PHYSICAL',
+  TECHNICAL = 'TECHNICAL',
+}
+
 export type SubjectStatus = 'active' | 'inactive' | 'archived';
 
 @Schema({
@@ -38,11 +47,23 @@ export class Subject extends Document {
   @Prop({ type: Types.ObjectId, ref: 'Teacher', index: true })
   teacher?: Types.ObjectId;
 
+  // Nouvel enseignant principal (compatibilité: on conserve teacher ci-dessus)
+  @Prop({ type: Types.ObjectId, ref: 'Teacher' })
+  mainTeacher?: Types.ObjectId;
+
   @Prop({ trim: true, maxlength: 500 })
   description?: string;
 
+  // Catégorie de matière (enum)
+  @Prop({ enum: SubjectCategory, required: false })
+  category?: SubjectCategory;
+
   @Prop({ required: true, min: 0, max: 10 })
   creditHours: number;
+
+  // Coefficient pour notation (1..10)
+  @Prop({ required: false, min: 1, max: 10 })
+  coefficient?: number;
 
   @Prop({ default: true, index: true })
   isCore: boolean;
@@ -55,6 +76,18 @@ export class Subject extends Document {
 
   @Prop([{ type: Types.ObjectId, ref: 'Subject' }])
   coRequisites?: Types.ObjectId[];
+
+  // Liste des classes liées à la matière
+  @Prop([{ type: Types.ObjectId, ref: 'Class' }])
+  classes?: Types.ObjectId[];
+
+  // Activation simple (en plus du status existant pour compatibilité)
+  @Prop({ default: true })
+  isActive?: boolean;
+
+  // Couleur UI
+  @Prop()
+  color?: string;
 
   @Prop({
     enum: ['active', 'inactive', 'archived'],
@@ -69,7 +102,11 @@ export const SubjectSchema = SchemaFactory.createForClass(Subject);
 SubjectSchema.index({ school: 1, academicYear: 1 });
 SubjectSchema.index({ school: 1, isCore: 1 });
 SubjectSchema.index({ school: 1, electiveGroup: 1 });
-SubjectSchema.index({ code: 1, academicYear: 1 }, { unique: true });
+// Unicité plus stricte: code unique par école et année académique
+SubjectSchema.index({ school: 1, code: 1, academicYear: 1 }, { unique: true });
+// Index supplémentaires selon la nouvelle proposition
+SubjectSchema.index({ category: 1 });
+SubjectSchema.index({ classes: 1 });
 
 // Validation pour les matières optionnelles
 SubjectSchema.path('electiveGroup').validate(function (this: Subject) {

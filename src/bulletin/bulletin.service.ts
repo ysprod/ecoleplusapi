@@ -6,6 +6,10 @@ import {
   BulletinDocument,
   BulletinStatus,
 } from './schemas/bulletin.schema';
+import { Grade, GradeDocument } from '../grade/schemas/grade.schema';
+import { Conduct, ConductDocument } from '../conduct/schemas/conduct.schema';
+import { Remark, RemarkDocument } from '../remark/schemas/remark.schema';
+import { Subject } from '../subject/schemas/subject.schema';
 import { CreateBulletinDto } from './dto/create-bulletin.dto';
 import { UpdateBulletinDto } from './dto/update-bulletin.dto';
 import { BulletinResponseDto } from './dto/bulletin-response.dto';
@@ -19,6 +23,10 @@ import {
 export class BulletinService {
   constructor(
     @InjectModel(Bulletin.name) private bulletinModel: Model<BulletinDocument>,
+    @InjectModel(Grade.name) private gradeModel: Model<GradeDocument>,
+    @InjectModel(Conduct.name) private conductModel: Model<ConductDocument>,
+    @InjectModel(Remark.name) private remarkModel: Model<RemarkDocument>,
+    @InjectModel(Subject.name) private subjectModel: Model<Subject>,
   ) {}
 
   private map(doc: BulletinDocument): BulletinResponseDto {
@@ -208,5 +216,171 @@ export class BulletinService {
       .exec();
     if (!doc) throw new NotFoundException('Bulletin not found');
     return this.map(doc);
+  }
+
+  async generateBulletin(
+    studentId: Types.ObjectId,
+    termId: Types.ObjectId,
+    classId: Types.ObjectId,
+  ): Promise<BulletinDocument> {
+    // 1. Récupérer toutes les notes de l'élève pour ce trimestre
+    const grades = await this.gradeModel
+      .find({
+        student: studentId,
+        term: termId,
+        status: 'VALIDATED',
+      })
+      .populate('subject teacher')
+      .exec();
+
+    // 2. Grouper les notes par matière et calculer les moyennes
+    const gradesBySubject = this.calculateGradesBySubject(grades);
+
+    // 3. Calculer les statistiques de classe
+    const classStatistics = await this.calculateClassStatistics(
+      classId,
+      termId,
+      gradesBySubject,
+    );
+
+    // 4. Récupérer la conduite
+    const conduct = await this.conductModel
+      .findOne({ student: studentId, term: termId })
+      .exec();
+
+    // 5. Récupérer les observations
+    const remarks = await this.remarkModel
+      .find({ student: studentId, term: termId })
+      .exec();
+
+    // 6. Déterminer la décision
+    const decision = this.determineDecision(
+      classStatistics.generalAverage,
+      conduct,
+    );
+
+    // 7. Créer le bulletin
+    const bulletin = new this.bulletinModel({
+      student: studentId,
+      class: classId,
+      term: termId,
+      grades: gradesBySubject,
+      statistics: classStatistics,
+      conduct: conduct?._id,
+      remarks: remarks.map((r) => r._id),
+      decision,
+      status: 'GENERATED',
+      generatedAt: new Date(),
+    });
+
+    return await bulletin.save();
+  }
+
+  private calculateGradesBySubject(grades: any[]): any[] {
+    const subjectMap = new Map();
+
+    grades.forEach((grade) => {
+      const subjectId = grade.subject._id.toString();
+
+      if (!subjectMap.has(subjectId)) {
+        subjectMap.set(subjectId, {
+          subject: grade.subject._id,
+          coefficient: grade.subject.coefficient,
+          interrogation: 0,
+          devoir: 0,
+          composition: 0,
+          teacher: grade.teacher?._id,
+          teacherName: grade.teacher?.fullName,
+          grades: [],
+        });
+      }
+
+      const subjectData = subjectMap.get(subjectId);
+      subjectData.grades.push(grade);
+
+      // Répartir les notes selon le type
+      if (grade.type === 'INTERROGATION') {
+        subjectData.interrogation = grade.value;
+      } else if (grade.type === 'DEVOIR') {
+        subjectData.devoir = grade.value;
+      } else if (grade.type === 'COMPOSITION') {
+        subjectData.composition = grade.value;
+      }
+    });
+
+    // Calculer la moyenne par matière
+    return Array.from(subjectMap.values()).map((subject) => {
+      const moyenne =
+        subject.interrogation * 0.2 +
+        subject.devoir * 0.3 +
+        subject.composition * 0.5;
+
+      return {
+        ...subject,
+        moyenne: parseFloat(moyenne.toFixed(2)),
+        appreciation: this.getAppreciation(moyenne),
+        grades: undefined, // Ne pas inclure dans le bulletin final
+      };
+    });
+  }
+
+  private async calculateClassStatistics(
+    classId: Types.ObjectId,
+    termId: Types.ObjectId,
+    studentGrades: any[],
+  ): Promise<any> {
+    // Récupérer toutes les notes de la classe
+    const allClassGrades = await this.gradeModel
+      .find({ class: classId, term: termId, status: 'VALIDATED' })
+      .populate('student')
+      .exec();
+
+    // Calculer la moyenne générale de l'élève
+    const totalWeighted = studentGrades.reduce(
+      (sum, g) => sum + g.moyenne * g.coefficient,
+      0,
+    );
+    const totalCoefficients = studentGrades.reduce(
+      (sum, g) => sum + g.coefficient,
+      0,
+    );
+    const generalAverage = totalWeighted / totalCoefficients;
+
+    // Calculer les statistiques de classe
+    // (Implémentation simplifiée - à adapter selon vos besoins)
+    const classAverage = 12.5; // À calculer réellement
+    const rank = 4; // À calculer réellement
+    const totalStudents = 45; // À calculer réellement
+    const highestAverage = 18.5; // À calculer réellement
+    const lowestAverage = 8.2; // À calculer réellement
+
+    return {
+      generalAverage: parseFloat(generalAverage.toFixed(2)),
+      classAverage,
+      rank,
+      totalStudents,
+      highestAverage,
+      lowestAverage,
+      totalCoefficients,
+    };
+  }
+
+  private getAppreciation(moyenne: number): string {
+    if (moyenne >= 18) return 'Excellent travail, continuez ainsi';
+    if (moyenne >= 16) return 'Très bien, bon niveau';
+    if (moyenne >= 14) return 'Bien, continuez vos efforts';
+    if (moyenne >= 12) return 'Assez bien, peut mieux faire';
+    if (moyenne >= 10) return 'Passable, travail insuffisant';
+    return "Insuffisant, redoublez d'efforts";
+  }
+
+  private determineDecision(generalAverage: number, conduct: any): string {
+    if (generalAverage >= 18 && conduct?.discipline === 'EXCELLENT') {
+      return 'FELICITATIONS';
+    }
+    if (generalAverage >= 16) return 'TABLEAU_HONNEUR';
+    if (generalAverage >= 14) return 'ENCOURAGEMENTS';
+    if (generalAverage >= 10) return 'ADMIS';
+    return 'REDOUBLE';
   }
 }

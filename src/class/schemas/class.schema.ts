@@ -39,6 +39,22 @@ export class Class {
   @Prop([{ type: Types.ObjectId, ref: 'Subject' }])
   subjects: Types.ObjectId[];
 
+  // Nouveau champs: professeur principal
+  @Prop({ type: Types.ObjectId, ref: 'Teacher' })
+  mainTeacher: Types.ObjectId;
+
+  // Capacité maximale de la classe
+  @Prop({ default: 0 })
+  capacity: number;
+
+  // Salle de classe
+  @Prop()
+  room: string;
+
+  // Statut actif/inactif
+  @Prop({ default: true })
+  isActive: boolean;
+
   // Ajout explicite des champs de timestamps
   createdAt?: Date;
   updatedAt?: Date;
@@ -59,6 +75,14 @@ ClassSchema.virtual('studentCount').get(function () {
 
 ClassSchema.virtual('teacherCount').get(function () {
   return this.teachers?.length || 0;
+});
+
+// Virtual pour récupérer les bulletins liés à la classe (ex: pour calculer une moyenne courante)
+ClassSchema.virtual('currentTermAverage', {
+  ref: 'Bulletin',
+  localField: '_id',
+  foreignField: 'class',
+  justOne: false,
 });
 
 ClassSchema.methods.getFullName = function () {

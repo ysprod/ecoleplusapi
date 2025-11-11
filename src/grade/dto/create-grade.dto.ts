@@ -4,23 +4,29 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsMongoId,
+  Min,
+  Max,
+  IsDateString,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { GradeType } from '../schemas/grade.schema';
+import { GradeStatus, GradeType } from '../schemas/grade.schema';
 
 export class CreateGradeDto {
-  @ApiProperty()
-  @IsString()
+  @ApiProperty({ description: 'Student ID' })
+  @IsMongoId()
   @IsNotEmpty()
   student: string;
 
-  @ApiProperty()
-  @IsString()
+  @ApiProperty({ description: 'Teacher ID' })
+  @IsMongoId()
   @IsNotEmpty()
   teacher: string;
 
-  @ApiProperty()
+  @ApiProperty({ minimum: 0, maximum: 20 })
   @IsNumber()
+  @Min(0)
+  @Max(20)
   @IsNotEmpty()
   value: number;
 
@@ -29,10 +35,39 @@ export class CreateGradeDto {
   @IsNotEmpty()
   type: GradeType;
 
-  @ApiProperty()
-  @IsNumber()
+  @ApiProperty({ description: 'Subject ID' })
+  @IsMongoId()
   @IsNotEmpty()
-  trimester: number;
+  subject: string;
+
+  @ApiProperty({ description: 'Class ID' })
+  @IsMongoId()
+  @IsNotEmpty()
+  class: string;
+
+  @ApiProperty({ description: 'Term ID' })
+  @IsMongoId()
+  @IsNotEmpty()
+  term: string;
+
+  @ApiProperty({ description: 'AcademicYear ID' })
+  @IsMongoId()
+  @IsNotEmpty()
+  academicYear: string;
+
+  @ApiProperty({ required: false, minimum: 0, maximum: 20 })
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(20)
+  outOf?: number;
+
+  @ApiProperty({ required: false, minimum: 0, maximum: 10 })
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  @Max(10)
+  weight?: number;
 
   @ApiProperty({ required: false })
   @IsString()
@@ -42,10 +77,15 @@ export class CreateGradeDto {
   @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
-  subject?: string;
+  appreciation?: string;
 
-  @ApiProperty({ required: false })
-  @IsString()
+  @ApiProperty({ required: false, enum: GradeStatus })
+  @IsEnum(GradeStatus)
   @IsOptional()
-  class?: string;
+  status?: GradeStatus;
+
+  @ApiProperty({ required: false, description: 'ISO date string' })
+  @IsDateString()
+  @IsOptional()
+  evaluationDate?: string;
 }

@@ -2,7 +2,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Grade, GradeDocument } from './schemas/grade.schema';
+import { Grade, GradeDocument, GradeStatus, GradeType } from './schemas/grade.schema';
 import { CreateGradeDto } from './dto/create-grade.dto';
 import { GradeResponseDto } from './dto/grade-response.dto';
 import { TeacherService } from '../teacher/teacher.service';
@@ -28,6 +28,9 @@ export class GradeService {
       { path: 'teacher', select: '-password -refreshToken' },
       { path: 'subject' },
       { path: 'class' },
+      { path: 'term' },
+      { path: 'academicYear' },
+      { path: 'validatedBy', select: '-password -refreshToken' },
     ]);
 
     return {
@@ -35,11 +38,20 @@ export class GradeService {
       student: grade.student as unknown as StudentResponseDto,
       teacher: grade.teacher as unknown as TeacherResponseDto,
       value: grade.value,
-      type: grade.type,
-      trimester: grade.trimester,
+      outOf: grade.outOf,
+      weight: grade.weight,
+      type: grade.type as GradeType,
+      status: grade.status as GradeStatus,
       comments: grade.comments,
+      appreciation: grade.appreciation,
       subject: grade.subject as unknown as SubjectResponseDto,
       class: grade.class as unknown as ClassResponseDto,
+      term: grade.term?.toString(),
+      academicYear: grade.academicYear?.toString(),
+      evaluationDate: grade.evaluationDate,
+      submittedAt: grade.submittedAt,
+      validatedAt: grade.validatedAt,
+      validatedBy: grade.validatedBy?.toString(),
       createdAt: grade.createdAt!,
       updatedAt: grade.updatedAt!,
     };
@@ -56,12 +68,11 @@ export class GradeService {
       ...createGradeDto,
       student: new Types.ObjectId(createGradeDto.student),
       teacher: new Types.ObjectId(createGradeDto.teacher),
-      subject: createGradeDto.subject
-        ? new Types.ObjectId(createGradeDto.subject)
-        : undefined,
-      class: createGradeDto.class
-        ? new Types.ObjectId(createGradeDto.class)
-        : undefined,
+      subject: new Types.ObjectId(createGradeDto.subject),
+      class: new Types.ObjectId(createGradeDto.class),
+      term: new Types.ObjectId(createGradeDto.term),
+      academicYear: new Types.ObjectId(createGradeDto.academicYear),
+      status: createGradeDto.status ?? GradeStatus.DRAFT,
     });
 
     const savedGrade = await createdGrade.save();

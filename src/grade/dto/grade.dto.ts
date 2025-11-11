@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { GradeStatus, GradeType } from '../schemas/grade.schema';
 
 export class GradeDto {
   @ApiPropertyOptional()
@@ -16,11 +17,17 @@ export class GradeDto {
   @ApiProperty()
   value: number;
 
-  @ApiProperty({ enum: ['HOMEWORK', 'QUIZ', 'EXAM'] })
-  type: 'HOMEWORK' | 'QUIZ' | 'EXAM';
+  @ApiProperty({ enum: GradeType })
+  type: GradeType;
 
-  @ApiProperty()
-  trimester: number;
+  @ApiProperty({ required: false })
+  outOf?: number;
+
+  @ApiProperty({ required: false })
+  weight?: number;
+
+  @ApiProperty({ enum: GradeStatus })
+  status: GradeStatus;
 
   @ApiPropertyOptional()
   comments?: string;
@@ -32,8 +39,23 @@ export class GradeDto {
   updatedAt?: string;
 
   @ApiPropertyOptional()
-  studentId?: string;
+  appreciation?: string;
+
+  @ApiPropertyOptional({ description: 'Term ID' })
+  term?: string;
+
+  @ApiPropertyOptional({ description: 'AcademicYear ID' })
+  academicYear?: string;
 
   @ApiPropertyOptional()
-  teacherId?: string;
+  evaluationDate?: string;
+
+  @ApiPropertyOptional()
+  submittedAt?: string;
+
+  @ApiPropertyOptional()
+  validatedAt?: string;
+
+  @ApiPropertyOptional()
+  validatedBy?: string;
 }

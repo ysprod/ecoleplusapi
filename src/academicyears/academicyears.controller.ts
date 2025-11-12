@@ -24,6 +24,41 @@ import { Types } from 'mongoose';
 import { SchoolService } from '../school/school.service';
 import { AcademicYearsService } from './academicyears.service';
 import { AcademicYear } from './schemas/academic-year.schema';
+import { TermType } from '../term/schemas/term.schema';
+
+// Type pour un trimestre personnalisé transmis depuis le frontend
+interface CustomTermInput {
+  name?: string;
+  type?: TermType | string; // Peut être string lors de la saisie côté client
+  startDate: Date | string;
+  endDate: Date | string;
+}
+
+// Type du payload global reçu par le POST /academicyears
+interface CreateAcademicYearWithSchoolPayload {
+  // Champs école
+  nom: string;
+  localite: string;
+  directeur: string;
+  phone: string;
+  email: string;
+  statut?: string;
+  niveaux?: string[];
+  matricule?: string;
+
+  // Champs année académique
+  name: string; // ex: "2025-2026" ou libellé
+  year?: string; // éventuel identifiant/affichage
+  startDate: Date | string;
+  endDate: Date | string;
+  isCurrent?: boolean;
+  user: string; // ObjectId sous forme string
+
+  // Gestion des trimestres
+  numberOfTerms?: number; // par défaut 3
+  autoGenerateTerms?: boolean; // true si génération auto
+  customTerms?: CustomTermInput[]; // liste si définie par l'utilisateur
+}
 
 @ApiTags('academicyears')
 @ApiBearerAuth()
@@ -52,11 +87,51 @@ export class AcademicYearsController {
     summary: 'Créer une année académique et la lier à une école',
   })
   @ApiCreatedResponse({ description: 'Année académique créée' })
-  async createSchoolWithAcademicYear(@Body() payload: any) {
+  async createSchoolWithAcademicYear(
+    @Body() payload: CreateAcademicYearWithSchoolPayload,
+  ) {
     if (!payload.user || !Types.ObjectId.isValid(payload.user)) {
       throw new BadRequestException(
         'user is required and must be a valid ObjectId',
       );
+    }
+
+    // Validation basique des dates nécessaires si autoGenerateTerms activé
+    if (payload.autoGenerateTerms) {
+      if (!payload.startDate || !payload.endDate) {
+        throw new BadRequestException(
+          'startDate et endDate sont requis pour la génération automatique des trimestres',
+        );
+      }
+      const start = new Date(payload.startDate);
+      const end = new Date(payload.endDate);
+      if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
+        throw new BadRequestException(
+          'startDate doit être une date valide antérieure à endDate',
+        );
+      }
+    }
+
+    // Validation des customTerms si fournis
+    if (payload.customTerms && payload.customTerms.length > 0) {
+      for (const term of payload.customTerms) {
+        if (!term.startDate || !term.endDate) {
+          throw new BadRequestException(
+            'Chaque trimestre personnalisé doit avoir startDate et endDate',
+          );
+        }
+        const tStart = new Date(term.startDate);
+        const tEnd = new Date(term.endDate);
+        if (
+          isNaN(tStart.getTime()) ||
+          isNaN(tEnd.getTime()) ||
+          tStart >= tEnd
+        ) {
+          throw new BadRequestException(
+            `Trimestre personnalisé invalide: startDate doit être antérieure à endDate (${term.name ?? 'sans nom'})`,
+          );
+        }
+      }
     }
 
     // Séparer les données d'école et d'année académique
@@ -78,6 +153,9 @@ export class AcademicYearsController {
       endDate: payload.endDate,
       isCurrent: payload.isCurrent,
       user: payload.user,
+      numberOfTerms: payload.numberOfTerms,
+      autoGenerateTerms: payload.autoGenerateTerms,
+      customTerms: payload.customTerms,
     };
 
     // D'abord vérifier si une école avec cet email existe déjà

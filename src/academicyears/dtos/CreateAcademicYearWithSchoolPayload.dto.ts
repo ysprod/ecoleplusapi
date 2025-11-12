@@ -1,35 +1,126 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  ArrayMinSize,
+  IsBoolean,
+  IsDateString,
+  IsEmail,
+  IsEnum,
+  IsInt,
+  IsMongoId,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 import { TermType } from '../../term/schemas/term.schema';
 
 // Trimestre personnalisé transmis depuis le frontend
-export interface CustomTermInput {
+export class CustomTermInput {
+  @ApiPropertyOptional({ example: '1er Trimestre' })
+  @IsOptional()
+  @IsString()
   name?: string;
-  type?: TermType | string; // Peut être string lors de la saisie côté client
-  startDate: Date | string;
-  endDate: Date | string;
+
+  @ApiPropertyOptional({ enum: TermType })
+  @IsOptional()
+  @IsEnum(TermType)
+  type?: TermType;
+
+  @ApiProperty({ example: '2025-11-01' })
+  @IsDateString()
+  startDate!: string;
+
+  @ApiProperty({ example: '2026-01-31' })
+  @IsDateString()
+  endDate!: string;
 }
 
 // Payload global pour POST /academicyears
-export interface CreateAcademicYearWithSchoolPayload {
+export class CreateAcademicYearWithSchoolPayload {
   // Champs école
-  nom: string;
-  localite: string;
-  directeur: string;
-  phone: string;
-  email: string;
+  @ApiProperty({ example: 'Lycée Victor Hugo' })
+  @IsString()
+  nom!: string;
+
+  @ApiProperty({ example: 'Abidjan' })
+  @IsString()
+  localite!: string;
+
+  @ApiProperty({ example: 'Mme Dupont' })
+  @IsString()
+  directeur!: string;
+
+  @ApiProperty({ example: '+22501020304' })
+  @IsString()
+  phone!: string;
+
+  @ApiProperty({ example: 'ecole@exemple.com' })
+  @IsEmail()
+  email!: string;
+
+  @ApiPropertyOptional({ example: 'privé' })
+  @IsOptional()
+  @IsString()
   statut?: string;
+
+  @ApiPropertyOptional({ type: [String], example: ['Primaire', 'Collège'] })
+  @IsOptional()
+  @IsArray()
+  @Type(() => String)
   niveaux?: string[];
+
+  @ApiPropertyOptional({ example: 'SCH-11824-811' })
+  @IsOptional()
+  @IsString()
   matricule?: string;
 
   // Champs année académique
-  name: string; // ex: "2025-2026" ou libellé
+  @ApiProperty({ example: '2025-2026' })
+  @IsString()
+  name!: string; // ex: "2025-2026" ou libellé
+
+  @ApiPropertyOptional({ example: '2025-2026' })
+  @IsOptional()
+  @IsString()
   year?: string; // éventuel identifiant/affichage
-  startDate: Date | string;
-  endDate: Date | string;
+
+  @ApiProperty({ example: '2025-11-07' })
+  @IsDateString()
+  startDate!: string;
+
+  @ApiProperty({ example: '2026-11-12' })
+  @IsDateString()
+  endDate!: string;
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  @IsBoolean()
   isCurrent?: boolean;
-  user: string; // ObjectId sous forme string
+
+  @ApiProperty({
+    example: '6913f872157404c2372198c9',
+    description: 'User ObjectId',
+  })
+  @IsMongoId()
+  user!: string; // ObjectId sous forme string
 
   // Gestion des trimestres
-  numberOfTerms?: number; // par défaut 3
-  autoGenerateTerms?: boolean; // true si génération auto
+  @ApiPropertyOptional({ default: 3, minimum: 1 })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  numberOfTerms?: number = 3; // par défaut 3
+
+  @ApiPropertyOptional({ default: true })
+  @IsOptional()
+  @IsBoolean()
+  autoGenerateTerms?: boolean;
+
+  @ApiPropertyOptional({ type: [CustomTermInput] })
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1)
+  @Type(() => CustomTermInput)
   customTerms?: CustomTermInput[]; // liste si définie par l'utilisateur
 }

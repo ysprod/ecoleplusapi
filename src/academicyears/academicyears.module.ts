@@ -6,12 +6,14 @@ import {
   AcademicYear,
   AcademicYearSchema,
 } from './schemas/academic-year.schema';
+import { Term, TermSchema } from '../term/schemas/term.schema';
 import { SchoolModule } from '../school/school.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: AcademicYear.name, schema: AcademicYearSchema },
+      { name: Term.name, schema: TermSchema },
     ]),
     SchoolModule,
   ],

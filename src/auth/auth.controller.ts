@@ -20,14 +20,27 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Connexion réussie' })
   @ApiResponse({ status: 401, description: 'Identifiants invalides' })
   async login(@Body() loginDto: LoginDto) {
-    const user = await this.authService.validateUser(
-      loginDto.email,
-      loginDto.password,
-    );
-    if (!user) throw new UnauthorizedException('Invalid credentials');
+    try {
+      console.log('🔐 Login attempt:', { email: loginDto.email });
+      
+      const user = await this.authService.validateUser(
+        loginDto.email,
+        loginDto.password,
+      );
+      
+      if (!user) {
+        console.warn('❌ Invalid credentials for:', loginDto.email);
+        throw new UnauthorizedException('Invalid credentials');
+      }
 
-    const tokens = this.authService.generateTokens(user);
-    return { ...tokens, user };
+      const tokens = this.authService.generateTokens(user);
+      console.log('✅ Login successful:', loginDto.email);
+      
+      return { ...tokens, user };
+    } catch (error) {
+      console.error('❌ Login error:', error.message);
+      throw error;
+    }
   }
 
   @Post('google')

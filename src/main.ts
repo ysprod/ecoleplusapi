@@ -19,13 +19,22 @@ async function bootstrap() {
     'https://ecoleplus-3464u432f-yaya-sidibes-projects.vercel.app', // Production actuelle
   ];
   const allowedOrigins = envOrigins.length ? envOrigins : defaultOrigins;
+  
+  console.log('🌐 CORS Configuration:', {
+    envOrigins: envOrigins.length > 0 ? envOrigins : 'using defaults',
+    allowedOrigins: allowedOrigins.slice(0, 3),
+    totalOrigins: allowedOrigins.length
+  });
 
   app.enableCors({
     origin: (origin, callback) => {
+      console.log('🔍 CORS check for origin:', origin || 'no-origin (likely Postman/curl)');
+      
       if (!origin) return callback(null, true); // Allow non-browser clients (Postman, curl)
 
       // Vérifier les origines exactes
       if (allowedOrigins.includes(origin)) {
+        console.log('✅ CORS allowed (exact match):', origin);
         return callback(null, true);
       }
 
@@ -39,9 +48,14 @@ async function bootstrap() {
       const isAllowed = allowedPatterns.some((pattern) =>
         pattern.test(origin || ''),
       );
-      return isAllowed
-        ? callback(null, true)
-        : callback(new Error('Not allowed by CORS'));
+      
+      if (isAllowed) {
+        console.log('✅ CORS allowed (pattern match):', origin);
+        return callback(null, true);
+      }
+      
+      console.warn('❌ CORS blocked:', origin);
+      return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
@@ -111,5 +125,7 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3001;
   await app.listen(port);
+  console.log(`🚀 Application is running on: http://localhost:${port}`);
+  console.log(`📚 Swagger docs available at: http://localhost:${port}/api/docs`);
 }
 bootstrap();

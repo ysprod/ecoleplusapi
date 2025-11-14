@@ -73,6 +73,7 @@ export class UserService {
       ...createUserDto,
       email,
       password: hashedPassword,
+      profileType: createUserDto.profileType || 'other', // Default to 'other' if not provided
     });
 
     const savedUser = await createdUser.save();
@@ -202,6 +203,29 @@ export class UserService {
 
   async findRawByEmail(email: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ email: email.toLowerCase() }).exec();
+  }
+
+  /**
+   * Internal auth-only lookup that includes the password hash
+   */
+  async findRawByEmailWithPassword(
+    email: string,
+  ): Promise<UserDocument | null> {
+    return this.userModel
+      .findOne({ email: email.toLowerCase() })
+      .select('+password')
+      .exec();
+  }
+
+  /**
+   * Raw lookup by id that returns null instead of throwing.
+   * Useful for internal checks like token refresh where 404 exceptions are not desired.
+   */
+  async findRawById(id: string): Promise<UserDocument | null> {
+    if (!Types.ObjectId.isValid(id)) {
+      return null;
+    }
+    return this.userModel.findById(id).exec();
   }
 
   async findById(id: string): Promise<UserResponseDto> {

@@ -8,6 +8,8 @@ import {
   Delete,
   UseGuards,
   Request,
+  Logger,
+  BadRequestException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AuthService } from './auth.service';
@@ -20,6 +22,8 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 
 @Controller('users')
 export class UserController {
+  private readonly logger = new Logger(UserController.name);
+
   constructor(
     private readonly userService: UserService,
     private readonly authService: AuthService,
@@ -27,7 +31,14 @@ export class UserController {
 
   @Post('register')
   async create(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
-    return this.userService.create(createUserDto);
+    try {
+      this.logger.log(`Registration attempt for email: ${createUserDto.email}`);
+      this.logger.debug(`Registration data: ${JSON.stringify(createUserDto)}`);
+      return await this.userService.create(createUserDto);
+    } catch (error) {
+      this.logger.error(`Registration failed: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 
   @UseGuards(LocalAuthGuard)

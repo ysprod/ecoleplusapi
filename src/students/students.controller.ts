@@ -48,7 +48,13 @@ export class StudentsController {
     @Body() createStudentDto: CreateStudentDto,
   ): Promise<StudentResponseDto> {
     console.log('Creating student with data:', createStudentDto);
-    return this.studentsService.create(createStudentDto);
+    try {
+      return await this.studentsService.create(createStudentDto);
+    } catch (err) {
+      const message = (err?.response?.message || err?.message || err)?.toString?.() || 'Unknown error';
+      console.error('Student creation failed:', message);
+      throw err;
+    }
   }
 
   @Patch(':id')

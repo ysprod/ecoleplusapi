@@ -16,6 +16,7 @@ export class SubjectsService {
   ) {}
 
   async create(createSubjectDto: CreateSubjectDto): Promise<Subject> {
+      console.log("Creating subject with data:", createSubjectDto);
     try {
       const subject = new this.subjectModel(createSubjectDto);
       return await subject.save();
@@ -32,18 +33,24 @@ export class SubjectsService {
   async findAll(): Promise<Subject[]> {
     return this.subjectModel
       .find({ status: { $ne: 'archived' } })
-      .populate('school', 'name')
+      .populate('school', 'nom')
       .populate('academicYear', 'name')
-      .populate('teacher', 'name')
+      .populate('mainTeacher', 'firstName lastName')
+      .populate('classes', 'name level')
       .sort({ isCore: -1, name: 1 })
       .exec();
   }
 
-  async findBySchool(schoolId: string): Promise<Subject[]> {
+  async findBySchool(schoolId: string, academicYearId?: string): Promise<Subject[]> {
+    const query: any = { school: schoolId, status: { $ne: 'archived' } };
+    if (academicYearId) {
+      query.academicYear = academicYearId;
+    }
     return this.subjectModel
-      .find({ school: schoolId, status: { $ne: 'archived' } })
+      .find(query)
       .populate('academicYear', 'name')
-      .populate('teacher', 'name')
+      .populate('mainTeacher', 'firstName lastName')
+      .populate('classes', 'name level')
       .sort({ name: 1 })
       .exec();
   }
@@ -51,11 +58,10 @@ export class SubjectsService {
   async findOne(id: string): Promise<Subject> {
     const subject = await this.subjectModel
       .findById(id)
-      .populate('school', 'name')
+      .populate('school', 'nom')
       .populate('academicYear', 'name')
-      .populate('teacher', 'name')
-      .populate('prerequisites', 'name code')
-      .populate('coRequisites', 'name code')
+      .populate('mainTeacher', 'firstName lastName')
+      .populate('classes', 'name level')
       .exec();
 
     if (!subject) {

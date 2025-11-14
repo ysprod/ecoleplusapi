@@ -79,13 +79,17 @@ export class StudentsService {
       ...createStudentDto,
       matricule,
       class: createStudentDto.classId,
+      averageGrade: createStudentDto.averageGrade ?? 0,
     });
 
     const savedStudent = await createdStudent.save();
-    await this.classService.addStudent(
-      createStudentDto.classId!,
-      savedStudent._id.toString(),
-    );
+    // Lier à la classe seulement si classId est fourni
+    if (createStudentDto.classId) {
+      await this.classService.addStudent(
+        createStudentDto.classId,
+        savedStudent._id.toString(),
+      );
+    }
 
     return this.mapToResponseDto(savedStudent);
   }

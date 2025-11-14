@@ -61,6 +61,18 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true,
       transform: true,
+      forbidNonWhitelisted: false, // Allow extra properties but strip them
+      transformOptions: {
+        enableImplicitConversion: true, // Auto-convert types
+      },
+      exceptionFactory: (errors) => {
+        const messages = errors.map(error => ({
+          field: error.property,
+          errors: Object.values(error.constraints || {}),
+        }));
+        console.error('Validation errors:', JSON.stringify(messages, null, 2));
+        return new ValidationPipe().createExceptionFactory()(errors);
+      },
     }),
   );
 

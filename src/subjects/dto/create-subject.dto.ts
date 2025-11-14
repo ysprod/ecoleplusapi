@@ -6,12 +6,15 @@ import {
   IsOptional,
   IsEnum,
   IsArray,
+  IsMongoId,
   Min,
   Max,
   MaxLength,
+  Matches,
 } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SubjectCategory } from '../schemas/subject.schema';
 
 export class CreateSubjectDto {
   @ApiProperty({
@@ -25,51 +28,42 @@ export class CreateSubjectDto {
   name: string;
 
   @ApiProperty({
-    description: 'Code unique de la matière',
-    example: 'MATH101',
-    maxLength: 20,
+    description: 'Code unique de la matière (lettres majuscules et chiffres uniquement)',
+    example: 'MATH',
+    maxLength: 10,
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(20)
+  @MaxLength(10)
+  @Matches(/^[A-Z0-9]+$/, {
+    message: 'Le code doit contenir uniquement des lettres majuscules et des chiffres'
+  })
   @Transform(({ value }) => value?.toUpperCase())
   code: string;
 
   @ApiProperty({
-    description: "ID de l'école",
-    example: '507f1f77bcf86cd799439011',
+    description: 'Catégorie de la matière',
+    enum: SubjectCategory,
+    example: SubjectCategory.SCIENCES,
   })
-  @IsString()
-  @IsNotEmpty()
-  school: string;
+  @IsEnum(SubjectCategory)
+  category: SubjectCategory;
 
   @ApiProperty({
-    description: "ID de l'année académique",
-    example: '507f1f77bcf86cd799439012',
+    description: 'Coefficient de la matière',
+    example: 3,
+    minimum: 1,
+    maximum: 10,
   })
-  @IsString()
-  @IsNotEmpty()
-  academicYear: string;
-
-  @ApiPropertyOptional({
-    description: 'ID du département',
-    example: '507f1f77bcf86cd799439013',
-  })
-  @IsOptional()
-  @IsString()
-  department?: string;
-
-  @ApiPropertyOptional({
-    description: "ID de l'enseignant",
-    example: '507f1f77bcf86cd799439014',
-  })
-  @IsOptional()
-  @IsString()
-  teacher?: string;
+  @IsNumber()
+  @Min(1)
+  @Max(10)
+  @Type(() => Number)
+  coefficient: number;
 
   @ApiPropertyOptional({
     description: 'Description de la matière',
-    example: 'Cours de mathématiques fondamentales pour le niveau primaire',
+    example: 'Cours de mathématiques niveau secondaire',
     maxLength: 500,
   })
   @IsOptional()
@@ -77,39 +71,60 @@ export class CreateSubjectDto {
   @MaxLength(500)
   description?: string;
 
-  @ApiProperty({
-    description: 'Nombre de crédits de la matière',
-    example: 3,
-    minimum: 0,
-    maximum: 10,
+  @ApiPropertyOptional({
+    description: 'ID du professeur principal',
+    example: '507f1f77bcf86cd799439013',
   })
-  @IsNumber()
-  @Min(0)
-  @Max(10)
-  creditHours: number;
+  @IsOptional()
+  @IsMongoId()
+  mainTeacher?: string;
+
+  @ApiPropertyOptional({
+    description: 'IDs des classes associées',
+    type: [String],
+    example: ['507f1f77bcf86cd799439014', '507f1f77bcf86cd799439015'],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  classes?: string[];
 
   @ApiProperty({
-    description: 'Indique si la matière est obligatoire',
+    description: "ID de l'école",
+    example: '507f1f77bcf86cd799439011',
+    required: false,
+  })
+  @IsOptional()
+  @IsMongoId()
+  school?: string;
+
+  @ApiProperty({
+    description: "ID de l'année académique",
+    example: '507f1f77bcf86cd799439012',
+    required: false,
+  })
+  @IsOptional()
+  @IsMongoId()
+  academicYear?: string;
+
+  @ApiPropertyOptional({
+    description: 'Statut actif de la matière',
     example: true,
+    default: true,
   })
+  @IsOptional()
   @IsBoolean()
-  isCore: boolean;
+  isActive?: boolean;
 
+  @ApiPropertyOptional({
+    description: 'Couleur de la matière en hexadécimal',
+    example: '#3b82f6',
+    pattern: '^#[0-9A-F]{6}$',
+  })
   @IsOptional()
   @IsString()
-  electiveGroup?: string;
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  prerequisites?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  coRequisites?: string[];
-
-  @IsOptional()
-  @IsEnum(['active', 'inactive', 'archived'])
-  status?: string;
+  @Matches(/^#[0-9A-F]{6}$/i, {
+    message: 'La couleur doit être au format hexadécimal (ex: #3b82f6)'
+  })
+  color?: string;
 }

@@ -25,14 +25,21 @@ export class AuthService {
   // }
 
   async validateUser(email: string, password: string) {
-    const user = await this.userService.findRawByEmail(email);
-    // if (user && await bcrypt.compare(password, user.password)) {
-    if (user) {
-      // Ne jamais retourner le mot de passe !
-      const { password, ...result } = user.toObject();
-      return result;
+    const user = await this.userService.findRawByEmailWithPassword(email);
+    if (!user) return null;
+
+    // Ensure password is present and compare
+    const hash = (user as any).password;
+    const ok = hash ? await bcrypt.compare(password, hash) : false;
+    if (!ok) {
+      // Minimal log without leaking sensitive info
+      console.warn('Login failed: password mismatch for', email.toLowerCase());
+      return null;
     }
-    return null;
+
+    // Never return password
+    const { password: _pw, ...result } = user.toObject();
+    return result;
   }
 
   async login(user: any) {
@@ -101,7 +108,7 @@ export class AuthService {
       const payload = this.jwtService.verify(refreshToken);
 
       // 2. Retrouver l'utilisateur depuis le payload
-      const user = await this.userService.findOne(payload.sub);
+      const user = await this.userService.findRawById(payload.sub);
       if (!user) {
         throw new UnauthorizedException('User not found');
       }
@@ -112,13 +119,12 @@ export class AuthService {
       // 4. Générer de nouveaux tokens (rotation des refresh tokens)
       return this.generateTokens(userObj);
     } catch (error) {
-      // Log l'erreur pour debug (sera visible dans les logs Render)
-      console.error('Refresh token error:', error.message);
+      // Log minimal pour debug sans exposer les détails internes
+      const msg = error instanceof UnauthorizedException ? error.message : 'Invalid or expired refresh token';
+      console.error('Refresh token error:', msg);
 
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
-      throw new UnauthorizedException('Invalid or expired refresh token');
+      // Toujours renvoyer une Unauthorized pour le client
+      throw new UnauthorizedException(msg);
     }
   }
 }

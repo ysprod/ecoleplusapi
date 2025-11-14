@@ -2,6 +2,7 @@ import {
   IsDate,
   IsEmail,
   IsEnum,
+  IsNotEmpty,
   IsOptional,
   IsString,
   MinLength,
@@ -13,6 +14,7 @@ import { ROLES, PROFILE_TYPES } from '../schemas/user.schema';
 export class CreateUserDto {
   @ApiProperty()
   @IsEmail()
+  @IsNotEmpty()
   email: string;
 
   @ApiProperty({ required: false })
@@ -22,10 +24,12 @@ export class CreateUserDto {
 
   @ApiProperty()
   @IsString()
+  @IsNotEmpty()
   firstName: string;
 
   @ApiProperty()
   @IsString()
+  @IsNotEmpty()
   lastName: string;
 
   @ApiProperty({ required: false })
@@ -35,21 +39,24 @@ export class CreateUserDto {
 
   @ApiProperty({ minLength: 8 })
   @IsString()
+  @IsNotEmpty()
   @MinLength(8)
   password: string;
 
   @ApiProperty({ enum: ROLES })
+  @IsNotEmpty()
   @IsEnum(ROLES, {
     message: 'role must be one of: ' + Object.values(ROLES).join(', '),
   })
   role: string;
 
-  @ApiProperty({ enum: PROFILE_TYPES, default: 'other' })
+  @ApiProperty({ enum: PROFILE_TYPES, default: 'other', required: false })
+  @IsOptional()
   @IsEnum(PROFILE_TYPES, {
     message:
       'profileType must be one of: ' + Object.values(PROFILE_TYPES).join(', '),
   })
-  profileType: string = 'other';
+  profileType?: string;
 
   @ApiProperty({ required: false })
   @IsString()
@@ -62,11 +69,11 @@ export class CreateUserDto {
   status?: string;
 
   @ApiProperty({ required: false, type: String, example: '1990-01-01' })
+  @IsOptional()
   @Type(() => Date) // transforme string en Date
   @IsDate({
     message: 'birthDate must be a valid Date (ISO string: YYYY-MM-DD)',
   })
-  @IsOptional()
   birthDate?: Date;
 
   @ApiProperty({ required: false })

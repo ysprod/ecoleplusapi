@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  Logger,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SubjectsService } from './subjects.service';
@@ -16,11 +17,20 @@ import { UpdateSubjectDto } from './dto/update-subject.dto';
 @ApiTags('subjects')
 @Controller('subjects')
 export class SubjectsController {
+  private readonly logger = new Logger(SubjectsController.name);
+
   constructor(private readonly subjectsService: SubjectsService) {}
 
   @Post()
-  create(@Body() createSubjectDto: CreateSubjectDto) {
-    return this.subjectsService.create(createSubjectDto);
+  async create(@Body() createSubjectDto: CreateSubjectDto) {
+    console.log("Creating subject with data:", createSubjectDto);
+    try {
+      this.logger.log('Creating subject with data:', JSON.stringify(createSubjectDto));
+      return await this.subjectsService.create(createSubjectDto);
+    } catch (error) {
+      this.logger.error('Failed to create subject:', error.message, error.stack);
+      throw error;
+    }
   }
 
   @Get()
@@ -30,11 +40,22 @@ export class SubjectsController {
     description: 'Liste des matières récupérée avec succès',
     type: [String],
   })
-  findAll(@Query('school') schoolId?: string) {
-    if (schoolId) {
-      return this.subjectsService.findBySchool(schoolId);
+  async findAll(
+    @Query('schoolId') schoolId?: string,
+    @Query('academicYearId') academicYearId?: string
+  ) {
+    try {
+      if (schoolId && academicYearId) {
+        return await this.subjectsService.findBySchool(schoolId, academicYearId);
+      }
+      if (schoolId) {
+        return await this.subjectsService.findBySchool(schoolId, academicYearId);
+      }
+      return await this.subjectsService.findAll();
+    } catch (error) {
+      this.logger.error('Failed to fetch subjects:', error.message, error.stack);
+      throw error;
     }
-    return this.subjectsService.findAll();
   }
 
   @Get(':id')

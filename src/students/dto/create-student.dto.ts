@@ -1,6 +1,6 @@
 // src/student/dto/create-student.dto.ts
 import {
-  IsDateString,
+  IsDate,
   IsEnum,
   IsNotEmpty,
   IsOptional,
@@ -9,6 +9,7 @@ import {
   IsBoolean,
   IsNumber,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { Gender, BloodGroup } from '../schemas/student.schema';
 
@@ -23,10 +24,11 @@ export class CreateStudentDto {
   @IsNotEmpty()
   lastName: string;
 
-  @ApiProperty()
-  @IsDateString()
-  @IsNotEmpty()
-  birthDate: Date;
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  birthDate?: Date;
 
   @ApiProperty({ required: false })
   @IsString()
@@ -38,10 +40,10 @@ export class CreateStudentDto {
   @IsOptional()
   email?: string;
 
-  @ApiProperty({ enum: Gender })
+  @ApiProperty({ enum: Gender, required: false })
   @IsEnum(Gender)
-  @IsNotEmpty()
-  gender: Gender;
+  @IsOptional()
+  gender?: Gender;
 
   @ApiProperty({ enum: BloodGroup, required: false })
   @IsEnum(BloodGroup)
@@ -169,8 +171,9 @@ export class CreateStudentDto {
   previousSchool?: string;
 
   @ApiProperty({ required: false })
-  @IsDateString()
   @IsOptional()
+  @Type(() => Date)
+  @IsDate()
   enrollmentDate?: Date;
 
   @ApiProperty({ required: false })

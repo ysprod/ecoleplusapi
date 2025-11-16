@@ -3,17 +3,24 @@ import {
   Post,
   Body,
   Res,
+  Headers,
   UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from 'src/user/dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { UserService } from 'src/user/user.service';
+import * as bcrypt from 'bcryptjs';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+  ) {}
 
   @Post('login')
   @ApiOperation({ summary: 'Connexion utilisateur' })
@@ -38,7 +45,7 @@ export class AuthController {
       
       return { ...tokens, user };
     } catch (error) {
-      console.error('❌ Login error:', error.message);
+      console.error('❌ Login error:', error?.message || error);
       throw error;
     }
   }
@@ -58,5 +65,34 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Refresh token invalide ou expiré' })
   async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authService.refreshTokens(refreshTokenDto.refreshToken);
+  }
+
+  @Post('admin/reset-password')
+  @ApiOperation({ summary: 'Admin - Réinitialiser le mot de passe utilisateur' })
+  @ApiResponse({ status: 200, description: 'Mot de passe réinitialisé' })
+  @ApiResponse({ status: 401, description: 'Token admin invalide' })
+  async adminResetPassword(
+    @Body()
+    body: { email: string; newPassword: string; token?: string },
+    @Headers('x-admin-token') headerToken?: string,
+  ) {
+    const adminToken = body?.token || headerToken;
+    if (!adminToken || adminToken !== process.env.ADMIN_RESET_TOKEN) {
+      throw new UnauthorizedException('Invalid admin token');
+    }
+    const email = (body?.email || '').toLowerCase().trim();
+    const newPassword = body?.newPassword || '';
+    if (!email || newPassword.length < 8) {
+      throw new BadRequestException('Email et nouveau mot de passe (>= 8) requis');
+    }
+
+    const user = await this.userService.findRawByEmail(email);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    const newHash = await bcrypt.hash(newPassword, 10);
+    (user as any).password = newHash;
+    await (user as any).save();
+    return { ok: true, email };
   }
 }

@@ -16,5 +16,6 @@ import { Parent, ParentSchema } from 'src/parent/schemas/parent.schema';
   ],
   controllers: [CogesController],
   providers: [CogesService],
+  exports: [CogesService],
 })
 export class CogesModule {}

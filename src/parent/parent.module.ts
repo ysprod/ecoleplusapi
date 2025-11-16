@@ -5,12 +5,14 @@ import { ParentService } from './parent.service';
 import { Parent, ParentSchema } from './schemas/parent.schema';
 import { UserModule } from '../user/user.module';
 import { StudentsModule } from 'src/students/students.module';
+import { CogesModule } from 'src/coges/coges.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Parent.name, schema: ParentSchema }]),
     forwardRef(() => UserModule),
     forwardRef(() => StudentsModule),
+    CogesModule,
   ],
   controllers: [ParentController],
   providers: [ParentService],

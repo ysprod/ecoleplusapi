@@ -1,24 +1,9 @@
 import {
-  BadRequestException,
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Patch,
-  Post,
-  Put,
-  Query,
-  UnauthorizedException,
+  BadRequestException, Body, Controller, Delete, Get, HttpCode,
+  HttpStatus, Param, Patch, Post, Put, Query, UnauthorizedException,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
+  ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags,
 } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { SchoolService } from '../school/school.service';
@@ -33,7 +18,7 @@ export class AcademicYearsController {
   constructor(
     private readonly academicYearsService: AcademicYearsService,
     private readonly schoolService: SchoolService,
-  ) {}
+  ) { }
 
   @Get()
   @ApiOperation({ summary: 'Lister les années académiques avec leurs écoles' })
@@ -41,6 +26,7 @@ export class AcademicYearsController {
   async listAll(@Query('user') userId?: string) {
     const academicYears =
       await this.academicYearsService.getAcademicYearsWithSchools(userId);
+    console.log('📚 Retrieved academic years:', JSON.stringify(academicYears, null, 2));
     return {
       success: true,
       hasData: academicYears.length > 0,

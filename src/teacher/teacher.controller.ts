@@ -103,6 +103,19 @@ export class TeacherController {
     return this.teacherService.getTeachersBySchool(schoolId, page, limit);
   }
 
+  @Get(':id/subjects')
+  async getTeacherSubjects(
+    @Param('id') id: string,
+    @Query('schoolId') schoolId?: string,
+  ): Promise<{ data: string[] }> {
+    console.log(`Fetching subjects for user ID: ${id} and school ID: ${schoolId}`);
+    // Ici, l'id reçu correspond à l'identifiant de l'utilisateur lié à l'enseignant
+    const teacher = await this.teacherService.findByUserId(id);
+    // Filter subjects by school if schoolId is provided
+    // For now, return all subjects; you can add school-specific filtering logic later
+    return { data: teacher.subjects || [] };
+  }
+
   @Get(':id')
   async findById(@Param('id') id: string): Promise<TeacherResponseDto> {
     return this.teacherService.findById(id);

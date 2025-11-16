@@ -12,6 +12,7 @@ import { UpdateParentDto } from './dto/update-parent.dto';
 import { Parent, ParentDocument } from './schemas/parent.schema';
 import { forwardRef } from '@nestjs/common';
 import { StudentsService } from 'src/students/students.service';
+import { CogesService } from 'src/coges/coges.service';
 
 @Injectable()
 export class ParentService {
@@ -20,6 +21,7 @@ export class ParentService {
     @Inject(forwardRef(() => UserService)) private userService: UserService,
     @Inject(forwardRef(() => StudentsService))
     private studentService: StudentsService,
+    private readonly cogesService: CogesService,
   ) {}
 
   private async mapToResponseDto(
@@ -116,10 +118,12 @@ export class ParentService {
       .exec();
 
     if (!parent) {
-      throw new NotFoundException('Parent not found for this user');
+      // Comportement plus souple: si aucun parent pour cet utilisateur,
+      // on retourne une liste vide au lieu d'un 404 afin de simplifier le frontend
+      return [];
     }
 
-    return parent.students as unknown as StudentResponseDto[];
+    return (parent.students as unknown as StudentResponseDto[]) || [];
   }
 
   async addStudentToParent(
@@ -235,5 +239,25 @@ export class ParentService {
       throw new NotFoundException('Parent or user not found');
     }
     return this.userService.getUserById(parent.user, fields);
+  }
+
+  async getCogesMemberships(parentId: string) {
+    if (!Types.ObjectId.isValid(parentId)) {
+      throw new NotFoundException('Parent not found');
+    }
+    return this.cogesService.findByParentId(parentId);
+  }
+
+  async getCogesByUserId(userId: string) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new NotFoundException('User not found');
+    }
+
+    const parent = await this.parentModel.findOne({ user: userId }).exec();
+    if (!parent) {
+      // Pas de parent associé à cet utilisateur -> pas d'adhésion COGES
+      return [];
+    }
+    return this.cogesService.findByParentId(parent._id.toString());
   }
 }

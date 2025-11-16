@@ -33,6 +33,11 @@ export class ParentController {
     const parent = await this.parentService.findByUserId(req.user.id);
     return this.parentService.getChildren(parent.id);
   }
+  
+  @Get('by-user/:userId/coges')
+  async getCogesByUser(@Param('userId') userId: string) {
+    return this.parentService.getCogesByUserId(userId);
+  }
 
   @Get(':id')
   async findById(@Param('id') id: string): Promise<ParentResponseDto> {
@@ -102,5 +107,10 @@ export class ParentController {
       ? fields.split(',')
       : ['email', 'firstName', 'lastName', 'role'];
     return this.parentService.getUserInfo(parentId, fieldsArray);
+  }
+
+  @Get(':id/coges')
+  async getCogesForParent(@Param('id') parentId: string) {
+    return this.parentService.getCogesMemberships(parentId);
   }
 }

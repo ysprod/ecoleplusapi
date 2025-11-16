@@ -30,7 +30,31 @@ export class AuthService {
 
     // Ensure password is present and compare
     const hash = (user as any).password;
-    const ok = hash ? await bcrypt.compare(password, hash) : false;
+    let ok = false;
+    if (hash) {
+      try {
+        ok = await bcrypt.compare(password, hash);
+      } catch {
+        ok = false;
+      }
+
+      // Fallback migration path: if stored "hash" isn't a bcrypt hash, allow one-time plain match and rehash
+      const looksLikeBcrypt = typeof hash === 'string' && /^\$2[aby]?\$\d{2}\$/.test(hash);
+      if (!ok && looksLikeBcrypt === false) {
+        if (hash === password) {
+          // Transparently migrate to bcrypt
+          try {
+            const newHash = await bcrypt.hash(password, 10);
+            (user as any).password = newHash;
+            await (user as any).save();
+            ok = true;
+            console.warn('Password migrated to bcrypt for', email.toLowerCase());
+          } catch (e) {
+            console.error('Failed to migrate password hash for', email.toLowerCase());
+          }
+        }
+      }
+    }
     if (!ok) {
       // Minimal log without leaking sensitive info
       console.warn('Login failed: password mismatch for', email.toLowerCase());

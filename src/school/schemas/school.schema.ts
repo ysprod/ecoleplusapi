@@ -143,10 +143,32 @@ export class School {
 export type SchoolDocument = School & Document;
 
 export const SchoolSchema = SchemaFactory.createForClass(School);
+// Ensure virtuals (classesCount, teachersCount) appear in JSON
+SchoolSchema.set('toJSON', { virtuals: true });
+SchoolSchema.set('toObject', { virtuals: true });
 
 SchoolSchema.index({ statut: 1 });
 SchoolSchema.index({ 'services.cantine': 1 });
 SchoolSchema.index({ 'services.transport': 1 });
+
+// Virtual populate that returns the number of classes linked to this school
+// Usage: School.find().populate('classesCount')
+// You can also restrict with a match on academicYear when populating from another model
+// e.g. populate({ path: 'schools', populate: { path: 'classesCount', match: { academicYear: someId } } })
+SchoolSchema.virtual('classesCount', {
+  ref: 'Class',
+  localField: '_id',
+  foreignField: 'school',
+  count: true,
+});
+
+// Count teachers linked to this school (via Teacher.schools)
+SchoolSchema.virtual('teachersCount', {
+  ref: 'Teacher',
+  localField: '_id',
+  foreignField: 'schools',
+  count: true,
+});
 
 SchoolSchema.virtual('nbPersonnel').get(function () {
   return (

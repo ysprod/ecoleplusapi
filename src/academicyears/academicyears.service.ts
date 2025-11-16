@@ -13,6 +13,10 @@ import { SchoolService } from '../school/school.service';
 import { ValidationService } from '../shared/validation.service';
 import { User } from 'src/user/schemas/user.schema';
 import { Term, TermDocument, TermType } from '../term/schemas/term.schema';
+import { Class, ClassDocument } from '../class/schemas/class.schema';
+import { Student, StudentDocument } from '../students/schemas/student.schema';
+import { Teacher, TeacherDocument } from '../teacher/schemas/teacher.schema';
+import { SubjectsService } from '../subjects/subjects.service';
 
 function tNameFromIndex(index: number) {
   if (index === 1) return '1er Trimestre';
@@ -26,7 +30,11 @@ export class AcademicYearsService {
     @InjectModel(AcademicYear.name)
     private academicYearModel: Model<AcademicYearDocument>,
     @InjectModel(Term.name) private termModel: Model<TermDocument>,
+    @InjectModel(Class.name) private classModel: Model<ClassDocument>,
+    @InjectModel(Student.name) private studentModel: Model<StudentDocument>,
+    @InjectModel(Teacher.name) private teacherModel: Model<TeacherDocument>,
     private readonly schoolService: SchoolService,
+    private readonly subjectsService: SubjectsService,
   ) {}
 
   async create(
@@ -38,14 +46,36 @@ export class AcademicYearsService {
   }
 
   async findAll(): Promise<AcademicYearDocument[]> {
-    return this.academicYearModel.find().populate('schools').exec();
+    // Populate schools and include a computed classesCount per school (overall, across all years)
+    const years = await this.academicYearModel
+      .find()
+      .populate({ path: 'schools', populate: [{ path: 'classesCount' }, { path: 'teachersCount' }] })
+      .exec();
+    // Attach per-year student and teacher/class counts where applicable (per year)
+    for (const y of years) {
+      await this.attachSchoolCountsForYear(y);
+    }
+    return years;
   }
 
   async findOne(id: string): Promise<AcademicYearDocument | null> {
     if (!Types.ObjectId.isValid(id)) {
       throw new NotFoundException('Academic year not found');
     }
-    return this.academicYearModel.findById(id).populate('schools').exec();
+    // Populate schools and include classesCount restricted to this academic year
+    const yearId = new Types.ObjectId(id);
+    const doc = await this.academicYearModel
+      .findById(id)
+      .populate({
+        path: 'schools',
+        populate: [
+          { path: 'classesCount', match: { academicYear: yearId } },
+          { path: 'teachersCount' },
+        ],
+      })
+      .exec();
+    if (doc) await this.attachSchoolCountsForYear(doc);
+    return doc;
   }
 
   async remove(id: string): Promise<void> {
@@ -201,8 +231,15 @@ export class AcademicYearsService {
     // Return the created academic year (fresh from DB with populated schools)
     const populated = await this.academicYearModel
       .findById(createdYear._id)
-      .populate('schools')
+      .populate({
+        path: 'schools',
+        populate: {
+          path: 'classesCount',
+          match: { academicYear: new Types.ObjectId(createdYearId) },
+        },
+      })
       .exec();
+    if (populated) await this.attachSchoolCountsForYear(populated);
 
     return { academicYear: populated as AcademicYearDocument };
   }
@@ -213,10 +250,14 @@ export class AcademicYearsService {
   ): Promise<AcademicYearDocument[]> {
     if (!userid || !Types.ObjectId.isValid(userid)) return [];
     const userObjectId = new Types.ObjectId(userid);
-    return this.academicYearModel
+    const docs = await this.academicYearModel
       .find({ user: userObjectId })
-      .populate('schools')
+      .populate({ path: 'schools', populate: [{ path: 'classesCount' }, { path: 'teachersCount' }] })
       .exec();
+    for (const d of docs) {
+      await this.attachSchoolCountsForYear(d);
+    }
+    return docs;
   }
 
   async updateSchoolWithAcademicYear(
@@ -225,11 +266,12 @@ export class AcademicYearsService {
     ValidationService.validateObjectId(data.id);
     const updated = await this.academicYearModel
       .findByIdAndUpdate(data.id, { $set: { ...data } }, { new: true })
-      .populate('schools')
+      .populate({ path: 'schools', populate: [{ path: 'classesCount' }, { path: 'teachersCount' }] })
       .exec();
     if (!updated) {
       throw new NotFoundException('Academic year not found');
     }
+    await this.attachSchoolCountsForYear(updated);
     return updated;
   }
 
@@ -263,6 +305,117 @@ export class AcademicYearsService {
   }) {
     const { schoolId, academicYear } = payload;
     ValidationService.validateObjectId(schoolId);
-    return this.createWithSchoolTransaction(academicYear, schoolId);
+    const result = await this.createWithSchoolTransaction(academicYear, schoolId);
+
+    // Génération automatique de matières par défaut après création
+    try {
+      // Récupérer les cycles/niveaux de l'école pour adapter le jeu de matières
+      const school = await this.schoolService.findById(schoolId);
+      const createdSubjects = await this.subjectsService.bulkCreateDefaultForSchool(
+        schoolId,
+        (result.academicYear._id as any).toString(),
+        academicYear.user?.toString?.(),
+        { cycles: school?.niveaux }
+      );
+      return { ...result, subjects: createdSubjects };
+    } catch (e) {
+      console.warn('Generation des matières par défaut échouée:', e.message);
+      return { ...result, subjects: [] };
+    }
+  }
+
+  /**
+   * Attach per-school counts (classes, students, teachers) limited to the given academic year
+   */
+  private async attachSchoolCountsForYear(doc: any) {
+    const yearId: Types.ObjectId | null = doc?._id ? new Types.ObjectId(doc._id) : null;
+    const schools = Array.isArray(doc?.schools) ? doc.schools : [];
+    if (!yearId || schools.length === 0) return;
+
+    const schoolIds = schools
+      .map((s: any) => s?._id)
+      .filter(Boolean)
+      .map((id: any) => new Types.ObjectId(id));
+    if (schoolIds.length === 0) return;
+
+    // Classes per school for this year
+    const classAgg = await this.classModel.aggregate([
+      { $match: { school: { $in: schoolIds }, academicYear: yearId } },
+      { $group: { _id: '$school', count: { $sum: 1 } } },
+    ]);
+    const classCount = new Map<string, number>(
+      classAgg.map((d) => [d._id.toString(), d.count as number]),
+    );
+
+    // Students per school for this year (via class -> school join)
+    const studentAgg = await this.studentModel.aggregate([
+      { $match: { class: { $ne: null } } },
+      {
+        $lookup: {
+          from: 'classes',
+          localField: 'class',
+          foreignField: '_id',
+          as: 'cls',
+        },
+      },
+      { $unwind: '$cls' },
+      {
+        $match: {
+          'cls.school': { $in: schoolIds },
+          'cls.academicYear': yearId,
+        },
+      },
+      { $group: { _id: '$cls.school', count: { $sum: 1 } } },
+    ]);
+    const studentCount = new Map<string, number>(
+      studentAgg.map((d) => [d._id.toString(), d.count as number]),
+    );
+
+    // Teachers per school for this year (teachers linked to classes in that school/year; deduplicated)
+    const teacherAgg = await this.teacherModel.aggregate([
+      {
+        $lookup: {
+          from: 'classes',
+          localField: 'classes',
+          foreignField: '_id',
+          as: 'cls',
+        },
+      },
+      { $unwind: '$cls' },
+      {
+        $match: {
+          'cls.school': { $in: schoolIds },
+          'cls.academicYear': yearId,
+        },
+      },
+      { $group: { _id: '$cls.school', teachers: { $addToSet: '$_id' } } },
+      { $project: { count: { $size: '$teachers' } } },
+    ]);
+    const teacherCount = new Map<string, number>(
+      teacherAgg.map((d) => [d._id.toString(), d.count as number]),
+    );
+
+    for (const s of schools) {
+      const key = s._id?.toString?.() || String(s._id);
+      if (!key) continue;
+      // Prefer per-year aggregation counts; fallback to existing virtuals if any
+      const clsVal = classCount.get(key) ?? s.classesCount ?? 0;
+      const stuVal = studentCount.get(key) ?? 0;
+      const teachVal = teacherCount.get(key) ?? s.teachersCount ?? (Array.isArray(s.teachers) ? s.teachers.length : 0);
+
+      // Assign directly
+      s.classesCount = clsVal;
+      s.studentsCount = stuVal;
+      s.teachersCount = teachVal;
+
+      // If it's a Mongoose document, mark as modified so toJSON includes it
+      if (typeof s.set === 'function') {
+        try {
+          s.set('classesCount', clsVal, { strict: false });
+          s.set('studentsCount', stuVal, { strict: false });
+          s.set('teachersCount', teachVal, { strict: false });
+        } catch {}
+      }
+    }
   }
 }

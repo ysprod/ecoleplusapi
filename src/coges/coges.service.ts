@@ -162,4 +162,26 @@ export class CogesService {
   async deleteBySchoolId(schoolId: string) {
     return this.cogesModel.deleteOne({ school: schoolId }).exec();
   }
+
+  async findByParentId(parentId: string) {
+    if (!Types.ObjectId.isValid(parentId)) {
+      return [];
+    }
+    const pid = new Types.ObjectId(parentId);
+    return this.cogesModel
+      .find({
+        $or: [
+          { parents: pid },
+          { president: pid },
+          { treasurer: pid },
+          { secretary: pid },
+        ],
+      })
+      .populate({ path: 'school', select: 'nom localite email' })
+      .populate({ path: 'parents', populate: { path: 'user', model: 'User' } })
+      .populate({ path: 'president', populate: { path: 'user', model: 'User' } })
+      .populate({ path: 'treasurer', populate: { path: 'user', model: 'User' } })
+      .populate({ path: 'secretary', populate: { path: 'user', model: 'User' } })
+      .exec();
+  }
 }

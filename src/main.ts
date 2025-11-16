@@ -4,10 +4,12 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { UserService } from './user/user.service';
 import * as bcrypt from 'bcryptjs';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   console.log('ENV JWT_SECRET present?', !!process.env.JWT_SECRET);
+  app.useGlobalFilters(new HttpExceptionFilter());
   // Optional bootstrap seeding for an admin/demo account
   try {
     const seedEmail = process.env.SEED_ADMIN_EMAIL;

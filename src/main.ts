@@ -2,10 +2,52 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { UserService } from './user/user.service';
+import * as bcrypt from 'bcryptjs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   console.log('ENV JWT_SECRET present?', !!process.env.JWT_SECRET);
+  // Optional bootstrap seeding for an admin/demo account
+  try {
+    const seedEmail = process.env.SEED_ADMIN_EMAIL;
+    const seedPassword = process.env.SEED_ADMIN_PASSWORD;
+    if (seedEmail && seedPassword && seedPassword.length >= 8) {
+      const userService = app.get(UserService);
+      const existing = await userService.findRawByEmail(seedEmail);
+      if (existing) {
+        const currentHash = (existing as any).password;
+        let needsUpdate = true;
+        try {
+          if (currentHash) {
+            needsUpdate = !(await bcrypt.compare(seedPassword, currentHash));
+          }
+        } catch {
+          needsUpdate = true;
+        }
+        if (needsUpdate) {
+          const newHash = await bcrypt.hash(seedPassword, 10);
+          (existing as any).password = newHash;
+          await (existing as any).save();
+          console.log(`🔑 Seed: password updated for ${seedEmail}`);
+        } else {
+          console.log(`🔑 Seed: password already up-to-date for ${seedEmail}`);
+        }
+      } else {
+        await (app.get(UserService) as UserService).create({
+          email: seedEmail.toLowerCase(),
+          firstName: 'ADMIN',
+          lastName: 'SEED',
+          password: seedPassword,
+          role: 'admin',
+          profileType: 'founder',
+        } as any);
+        console.log(`👤 Seed: admin user created for ${seedEmail}`);
+      }
+    }
+  } catch (e) {
+    console.warn('Seed error (ignored):', e?.message || e);
+  }
 
   const envOrigins = (process.env.ALLOWED_ORIGINS || '')
     .split(',')

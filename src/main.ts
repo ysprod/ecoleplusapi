@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  console.log('ENV JWT_SECRET present?', !!process.env.JWT_SECRET);
 
   const envOrigins = (process.env.ALLOWED_ORIGINS || '')
     .split(',')

@@ -1,0 +1,57 @@
+name: CI & Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint
+        run: npm run lint --if-present
+      - name: Run tests
+        run: |
+          if npm run | findstr /C:"test" >nul 2>&1; then
+            echo "Running test suite";
+            npm test -- --passWithNoTests;
+          else
+            echo "No test script defined; skipping tests";
+          fi
+      - name: Build
+        run: npm run build
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+  deploy:
+    needs: ci
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Trigger Render deploy hook
+        if: env.RENDER_DEPLOY_HOOK != ''
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          echo "Triggering Render deploy hook"
+          curl -X POST "$RENDER_DEPLOY_HOOK" -H 'Accept: application/json'
+      - name: Skip deploy (missing hook)
+        if: env.RENDER_DEPLOY_HOOK == ''
+        run: echo "No RENDER_DEPLOY_HOOK secret configured. Render will auto-deploy if connected to repo."

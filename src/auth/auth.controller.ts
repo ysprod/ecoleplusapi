@@ -95,4 +95,40 @@ export class AuthController {
     await (user as any).save();
     return { ok: true, email };
   }
+
+  @Post('debug/check-user')
+  @ApiOperation({ summary: 'Debug - Vérifier si un utilisateur existe' })
+  async debugCheckUser(@Body() body: { email: string }) {
+    const normalizedEmail = (body?.email || '').toLowerCase().trim();
+    try {
+      const user = await this.userService.findRawByEmail(normalizedEmail);
+      if (!user) {
+        return { 
+          found: false, 
+          email: normalizedEmail,
+          message: 'User not found in database'
+        };
+      }
+      const hasPassword = !!(user as any).password;
+      const passwordLength = hasPassword ? (user as any).password?.length : 0;
+      const isBcrypt = hasPassword && /^\$2[aby]?\$\d{2}\$/.test((user as any).password);
+      
+      return {
+        found: true,
+        email: user.email,
+        normalizedMatch: user.email === normalizedEmail,
+        role: user.role,
+        hasPassword,
+        passwordLength,
+        isBcryptHash: isBcrypt,
+        userId: (user as any)._id?.toString(),
+      };
+    } catch (error) {
+      return {
+        found: false,
+        email: normalizedEmail,
+        error: error.message,
+      };
+    }
+  }
 }

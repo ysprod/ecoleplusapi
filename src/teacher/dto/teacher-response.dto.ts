@@ -3,6 +3,7 @@ import { ClassResponseDto } from '../../class/dto/class-response.dto';
 import { SchoolResponseDto } from '../../school/dto/school-response.dto';
 import { GradeResponseDto } from '../../grade/dto/grade-response.dto';
 import { UserResponseDto } from '../../user/dto/user-response.dto';
+import { SubjectsResponseDto } from 'src/subject/dto/subjects-response.dto';
 
 export class TeacherResponseDto {
   @ApiProperty()
@@ -36,7 +37,7 @@ export class TeacherResponseDto {
   birthDate: Date;
 
   @ApiProperty({ type: [String] })
-  subjects: string[];
+  subjects: SubjectsResponseDto[];
 
   @ApiProperty({ type: [ClassResponseDto] })
   classes: ClassResponseDto[];

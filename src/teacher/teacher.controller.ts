@@ -16,6 +16,7 @@ import { TeacherService } from './teacher.service';
 import { GetUser } from '../auth/get-user.decorator';
 import { User } from '../user/schemas/user.schema';
 import { PaginatedTeachersResponseDto } from './dto/paginated-teachers.dto';
+import { SubjectsResponseDto } from 'src/subject/dto/subjects-response.dto';
 
 @Controller('teachers')
 export class TeacherController {
@@ -107,7 +108,7 @@ export class TeacherController {
   async getTeacherSubjects(
     @Param('id') id: string,
     @Query('schoolId') schoolId?: string,
-  ): Promise<{ data: string[] }> {
+  ): Promise<{ data: SubjectsResponseDto[] }> {
     console.log(`Fetching subjects for user ID: ${id} and school ID: ${schoolId}`);
     // Ici, l'id reçu correspond à l'identifiant de l'utilisateur lié à l'enseignant
     const teacher = await this.teacherService.findByUserId(id);

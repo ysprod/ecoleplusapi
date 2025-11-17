@@ -13,7 +13,6 @@ import { AuthService } from './auth.service';
     JwtModule.register({
       global: true,
       signOptions: { expiresIn: '30d' },
-      secret: process.env.JWT_SECRET || 'secretKey',
     }),
   ],
   providers: [AuthService, JwtStrategy],

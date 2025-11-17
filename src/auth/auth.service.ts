@@ -13,7 +13,7 @@ export class AuthService {
   constructor(
     @Inject(forwardRef(() => UserService)) private userService: UserService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   // async validateUserbcrypt(email: string, password: string) {
   //   const user = await this.userService.findByEmail(email);
@@ -25,7 +25,8 @@ export class AuthService {
   // }
 
   async validateUser(email: string, password: string) {
-    const user = await this.userService.findRawByEmailWithPassword(email);
+    const normalizedEmail = email.toLowerCase().trim(); // ← Ajouter
+    const user = await this.userService.findRawByEmailWithPassword(normalizedEmail);
     if (!user) return null;
 
     // Ensure password is present and compare
@@ -112,13 +113,16 @@ export class AuthService {
   generateTokens(user: any) {
     const userId =
       user._id?.toString() || user.id?.toString() || user._id || user.id;
+       if (!userId) {
+    throw new Error('User ID is required'); // ← Ajouter
+  }
     const payload = {
       sub: userId,
       email: user.email,
       role: user.role,
     };
     return {
-      accessToken: this.jwtService.sign(payload, { expiresIn: '1h' }),
+      accessToken: this.jwtService.sign(payload, { expiresIn: '3h' }),
       refreshToken: this.jwtService.sign(payload, { expiresIn: '7d' }),
     };
   }

@@ -21,6 +21,7 @@ import { SchoolResponseDto } from 'src/school/dto/school-response.dto';
 import { UserResponseDto } from 'src/user/dto/user-response.dto';
 import { PaginatedTeachersResponseDto } from './dto/paginated-teachers.dto';
 import { ClassDetail } from 'src/class/dto/class-detail.dto';
+import { SubjectsResponseDto } from 'src/subject/dto/subjects-response.dto';
 
 @Injectable()
 export class TeacherService {
@@ -45,9 +46,10 @@ export class TeacherService {
       phone: teacher.phone,
       birthDate: teacher.birthDate,
       // Retourne les IDs des matières (populate renvoie éventuellement des documents, on normalise vers string[])
-      subjects: (teacher.subjects || []).map((s: any) =>
-        typeof s === 'string' ? s : s?._id?.toString() ?? s?.toString(),
-      ),
+      // subjects: (teacher.subjects || []).map((s: any) =>
+      //   typeof s === 'string' ? s : s?._id?.toString() ?? s?.toString(),
+      // ),
+      subjects: teacher.subjects as unknown as SubjectsResponseDto[],
       classes: teacher.classes as unknown as ClassResponseDto[],
       schools: teacher.schools as unknown as SchoolResponseDto[],
       grades: teacher.grades as unknown as GradeResponseDto[],
@@ -136,7 +138,7 @@ export class TeacherService {
 
     const teacher = await this.teacherModel
       .findOne({ user: userId })
-      .populate('user schools grades')
+      .populate('user schools grades subjects')
       .populate({
         path: 'classes',
         populate: { path: 'school' },
@@ -245,7 +247,7 @@ export class TeacherService {
         .skip(skip)
         .limit(limit)
         .sort({ lastName: 1, firstName: 1 })
-        .populate('user classes schools grades')
+        .populate('user classes schools grades subjects')
         .exec(),
       this.teacherModel.countDocuments({ schools: schoolId }),
     ]);

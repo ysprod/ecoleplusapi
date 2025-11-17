@@ -171,6 +171,30 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3001;
   await app.listen(port);
+  const connection = app.get('DatabaseConnection'); // ou InjectConnection
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('📊 DATABASE INFO');
+  console.log('Connected:', connection.readyState === 1);
+  console.log('Database Name:', connection.name);
+  console.log('Host:', connection.host);
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  
+  // Test de query
+  try {
+    const User = connection.model('User');
+    const count = await User.countDocuments();
+    console.log('👥 Total users in database:', count);
+    
+    const testUser = await User.findOne({ email: 'academai@ecoleplus.ci' });
+    console.log('🔍 Test user found:', !!testUser);
+    if (testUser) {
+      console.log('   Email:', testUser.email);
+      console.log('   Name:', testUser.firstName, testUser.lastName);
+    }
+  } catch (e) {
+    console.error('❌ Query test failed:', e.message);
+  }
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log(`🚀 Application is running on: http://localhost:${port}`);
   console.log(`📚 Swagger docs available at: http://localhost:${port}/api/docs`);
 }

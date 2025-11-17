@@ -202,7 +202,11 @@ export class UserService {
   }
 
   async findRawByEmail(email: string): Promise<UserDocument | null> {
-    return this.userModel.findOne({ email: email.toLowerCase() }).exec();
+    const normalizedEmail = email.toLowerCase().trim();
+    console.log('[findRawByEmail] Searching for:', normalizedEmail);
+    const result = await this.userModel.findOne({ email: normalizedEmail }).exec();
+    console.log('[findRawByEmail] Found:', result ? 'YES' : 'NO', result?._id?.toString());
+    return result;
   }
 
   /**
@@ -211,10 +215,14 @@ export class UserService {
   async findRawByEmailWithPassword(
     email: string,
   ): Promise<UserDocument | null> {
-    return this.userModel
-      .findOne({ email: email.toLowerCase() })
+    const normalizedEmail = email.toLowerCase().trim();
+    console.log('[findRawByEmailWithPassword] Searching for:', normalizedEmail);
+    const result = await this.userModel
+      .findOne({ email: normalizedEmail })
       .select('+password')
       .exec();
+    console.log('[findRawByEmailWithPassword] Found:', result ? 'YES' : 'NO', result?._id?.toString());
+    return result;
   }
 
   /**

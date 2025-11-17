@@ -12,6 +12,7 @@ import { AuthService } from './auth.service';
     PassportModule,
     JwtModule.register({
       global: true,
+      secret: process.env.JWT_SECRET || 'fallback-secret-key-change-in-production',
       signOptions: { expiresIn: '30d' },
     }),
   ],

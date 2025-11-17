@@ -29,8 +29,9 @@ export class Teacher {
   @Prop()
   birthDate: Date;
 
-  @Prop({ type: [String], default: [] })
-  subjects: string[];
+  // Référence vers les matières (Subject) plutôt que simples codes string afin de pouvoir peupler
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Subject' }], default: [] })
+  subjects: Types.ObjectId[];
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Class' }], default: [] })
   classes: Types.ObjectId[];

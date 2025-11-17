@@ -44,7 +44,10 @@ export class TeacherService {
       gender: teacher.gender,
       phone: teacher.phone,
       birthDate: teacher.birthDate,
-      subjects: teacher.subjects,
+      // Retourne les IDs des matières (populate renvoie éventuellement des documents, on normalise vers string[])
+      subjects: (teacher.subjects || []).map((s: any) =>
+        typeof s === 'string' ? s : s?._id?.toString() ?? s?.toString(),
+      ),
       classes: teacher.classes as unknown as ClassResponseDto[],
       schools: teacher.schools as unknown as SchoolResponseDto[],
       grades: teacher.grades as unknown as GradeResponseDto[],
@@ -88,7 +91,7 @@ export class TeacherService {
   async findAll(): Promise<TeacherResponseDto[]> {
     const teachers = await this.teacherModel
       .find()
-      .populate('user classes schools grades')
+      .populate('user classes schools grades subjects')
       .exec();
     return teachers.map((teacher) => this.mapToResponseDto(teacher));
   }
@@ -210,9 +213,12 @@ export class TeacherService {
       throw new NotFoundException('Teacher not found');
     }
 
+    // Conversion explicite des IDs de matières en ObjectId pour correspondre au nouveau schéma
+    const subjectIds = (subjects || []).map((id) => new Types.ObjectId(id));
+
     const updatedTeacher = await this.teacherModel
-      .findByIdAndUpdate(teacherId, { subjects }, { new: true })
-      .populate('user classes schools grades')
+      .findByIdAndUpdate(teacherId, { subjects: subjectIds }, { new: true })
+      .populate('user classes schools grades subjects')
       .exec();
 
     if (!updatedTeacher) {

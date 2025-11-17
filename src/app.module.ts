@@ -27,6 +27,7 @@ import { TermModule } from './term/term.module';
 import { ConductModule } from './conduct/conduct.module';
 import { RemarkModule } from './remark/remark.module';
 import { BulletinModule } from './bulletin/bulletin.module';
+import { CoursesModule } from './courses/courses.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { BulletinModule } from './bulletin/bulletin.module';
     ConductModule,
     RemarkModule,
     BulletinModule,
+    CoursesModule,
   ],
   controllers: [AppController],
   providers: [],

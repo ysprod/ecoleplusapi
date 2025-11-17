@@ -33,20 +33,11 @@ export class ParentController {
     const parent = await this.parentService.findByUserId(req.user.id);
     return this.parentService.getChildren(parent.id);
   }
-  
+
+  // Routes spécifiques DOIVENT être avant les routes paramétrées génériques (:id)
   @Get('by-user/:userId/coges')
   async getCogesByUser(@Param('userId') userId: string) {
     return this.parentService.getCogesByUserId(userId);
-  }
-
-  @Get(':id')
-  async findById(@Param('id') id: string): Promise<ParentResponseDto> {
-    return this.parentService.findById(id);
-  }
-
-  @Get(':id/children')
-  async getChildren(@Param('id') id: string): Promise<StudentResponseDto[]> {
-    return this.parentService.getChildren(id);
   }
 
   @Get('by-user/:userId/children')
@@ -57,44 +48,14 @@ export class ParentController {
     return this.parentService.getChildrenByUserId(userId);
   }
 
-  @Post(':id/children')
-  async addChild(
-    @Param('id') id: string,
-    @Body() parentToStudentDto: ParentToStudentDto,
-  ): Promise<ParentResponseDto> {
-    return this.parentService.addStudentToParent(
-      id,
-      parentToStudentDto.studentId,
-    );
+  @Get(':id')
+  async findById(@Param('id') id: string): Promise<ParentResponseDto> {
+    return this.parentService.findById(id);
   }
 
-  @Delete(':id/children/:studentId')
-  async removeChild(
-    @Param('id') id: string,
-    @Param('studentId') studentId: string,
-  ): Promise<ParentResponseDto> {
-    return this.parentService.removeStudentFromParent(id, studentId);
-  }
-
-  @Post('me/children')
-  async addChildToMe(
-    @Request() req,
-    @Body() parentToStudentDto: ParentToStudentDto,
-  ): Promise<ParentResponseDto> {
-    const parent = await this.parentService.findByUserId(req.user.id);
-    return this.parentService.addStudentToParent(
-      parent.id,
-      parentToStudentDto.studentId,
-    );
-  }
-
-  @Delete('me/children/:studentId')
-  async removeChildFromMe(
-    @Request() req,
-    @Param('studentId') studentId: string,
-  ): Promise<ParentResponseDto> {
-    const parent = await this.parentService.findByUserId(req.user.id);
-    return this.parentService.removeStudentFromParent(parent.id, studentId);
+  @Get(':id/children')
+  async getChildren(@Param('id') id: string): Promise<StudentResponseDto[]> {
+    return this.parentService.getChildren(id);
   }
 
   @Get(':id/user-info')

@@ -8,6 +8,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('api');
   console.log('ENV JWT_SECRET present?', !!process.env.JWT_SECRET);
   app.useGlobalFilters(new HttpExceptionFilter());
   // Optional bootstrap seeding for an admin/demo account

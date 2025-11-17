@@ -313,9 +313,23 @@ export class TeacherService {
       data.schoolId,
       teacher._id.toString(),
     );
-    await this.teacherModel.findByIdAndUpdate(teacher._id, {
-      $addToSet: { classes: data.classId, schools: data.schoolId },
-    });
+
+    // Ajoute la classe et l'école au professeur
+    if (data.subjects && data.subjects.length > 0) {
+      await this.teacherModel.findByIdAndUpdate(teacher._id, {
+        $addToSet: {
+          classes: data.classId,
+          schools: data.schoolId,
+          subjects: { $each: data.subjects },
+        },
+      });
+      // Ajoute les matières à la classe
+      await this.classService.addSubjectsToClass(data.classId, data.subjects);
+    } else {
+      await this.teacherModel.findByIdAndUpdate(teacher._id, {
+        $addToSet: { classes: data.classId, schools: data.schoolId },
+      });
+    }
 
     return this.classService.getTeacherClasses(
       teacher._id.toString(),

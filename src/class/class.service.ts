@@ -593,6 +593,21 @@ export class ClassService {
   }
 
   /**
+   * Ajoute des matières à une classe (sans doublons)
+   */
+  async addSubjectsToClass(classId: string, subjectIds: string[]): Promise<void> {
+    if (!Types.ObjectId.isValid(classId)) {
+      throw new NotFoundException('Class not found');
+    }
+    if (!subjectIds || subjectIds.length === 0) return;
+    await this.classModel.findByIdAndUpdate(
+      classId,
+      { $addToSet: { subjects: { $each: subjectIds.map((id) => new Types.ObjectId(id)) } } },
+      { new: true },
+    );
+  }
+
+  /**
    * Retourne les classes d'un enseignant, éventuellement filtrées par école
    */
   async getTeacherClasses(

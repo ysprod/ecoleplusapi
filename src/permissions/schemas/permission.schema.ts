@@ -5,13 +5,19 @@ export type PermissionDocument = Permission & Document;
 
 @Schema({ timestamps: true })
 export class Permission {
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   name: string;
 
-  @Prop({ required: true })
+  @Prop()
   description: string;
 
   @Prop({ required: true })
+  resource: string;
+
+  @Prop({ required: true })
+  action: string;
+
+  @Prop()
   category: string;
 }
 

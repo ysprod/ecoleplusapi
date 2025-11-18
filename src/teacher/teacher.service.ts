@@ -34,9 +34,43 @@ export class TeacherService {
   ) {}
 
   private mapToResponseDto(teacher: Teacher): TeacherResponseDto {
+    // Normalisation fiable de l'utilisateur populé ou non
+    let userNormalized: any = undefined;
+    const rawUser: any = (teacher as any).user;
+    if (!rawUser) {
+      userNormalized = undefined;
+    } else if (Types.ObjectId.isValid(rawUser) || typeof rawUser === 'string') {
+      // Pas de populate: rawUser est seulement l'ObjectId (string ou ObjectId)
+      const idStr = rawUser.toString();
+      userNormalized = { id: idStr, _id: idStr };
+    } else {
+      // Populé: rawUser est un Document mongoose
+      const plain = typeof rawUser.toObject === 'function' ? rawUser.toObject() : rawUser;
+      const idStr = plain._id ? plain._id.toString() : (plain.id ? plain.id.toString() : undefined);
+      userNormalized = {
+        id: idStr,
+        _id: idStr,
+        email: plain.email,
+        matricule: plain.matricule,
+        firstName: plain.firstName,
+        lastName: plain.lastName,
+        name: plain.name || (plain.firstName && plain.lastName ? `${plain.firstName} ${plain.lastName}`.trim() : undefined),
+        gender: plain.gender,
+        role: plain.role,
+        profileType: plain.profileType,
+        emailVerified: plain.emailVerified,
+        phone: plain.phone,
+        status: plain.status,
+        birthDate: plain.birthDate,
+        photo: plain.photo,
+        avatar: plain.avatar,
+        createdAt: plain.createdAt,
+        updatedAt: plain.updatedAt,
+      };
+    }
     return {
       id: teacher._id.toString(),
-      user: teacher.user as unknown as UserResponseDto,
+      user: userNormalized as unknown as UserResponseDto,
       matricule: teacher.matricule,
       lastName: teacher.lastName,
       firstName: teacher.firstName,
@@ -125,7 +159,9 @@ export class TeacherService {
       throw new NotFoundException('Teacher not found');
     }
 
-    return this.mapToResponseDto(teacher);
+    const enseignant = this.mapToResponseDto(teacher);
+    console.log('Enseignant trouvé par matricule:', enseignant);
+    return enseignant;
   }
 
   /**

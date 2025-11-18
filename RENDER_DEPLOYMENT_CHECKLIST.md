@@ -34,7 +34,7 @@ JWT_SECRET=your-super-secret-jwt-key-at-least-32-chars
 
 ### 4. **API_URL** (optional, for Swagger docs)
 ```env
-API_URL=https://ecoleplus-api.onrender.com
+API_URL=https://ecoleplus-api.onrender.com/api
 ```
 
 ---

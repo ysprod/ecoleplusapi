@@ -22,6 +22,7 @@ import { ActivityModule } from './activities/activity.module';
 import { SupportModule } from './support/support.module';
 import { CartoModule } from './carto/carto.module';
 import { PermissionsModule } from './permissions/permissions.module';
+import { RolesModule } from './roles/roles.module';
 import { CantineModule } from './cantine/cantine.module';
 import { TermModule } from './term/term.module';
 import { ConductModule } from './conduct/conduct.module';
@@ -64,6 +65,7 @@ import { CoursesModule } from './courses/courses.module';
     SupportModule,
     CartoModule,
     PermissionsModule,
+    RolesModule,
     CantineModule,
     TermModule,
     ConductModule,

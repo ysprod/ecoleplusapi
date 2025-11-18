@@ -186,6 +186,7 @@ export class ClassService {
   ) {
     // Vérifie la validité de l'id
     if (!schoolId || !Types.ObjectId.isValid(schoolId)) {
+      console.log('Invalid schoolId:', schoolId);
       return {
         students: [],
         pagination: { page: 1, limit: 10, total: 0, pages: 0 },
@@ -193,10 +194,47 @@ export class ClassService {
     }
     const page = options?.page || 1;
     const limit = options?.limit || 10;
-    const query: any = { school: schoolId };
+    
+    // Étape 1 : Trouver toutes les classes de cette école
+    // Le champ school est stocké comme string dans la DB, pas comme ObjectId
+    const classFilter: any = { school: schoolId };
+    if (options?.niveau) {
+      classFilter.level = options.niveau;
+    }
+    
+    console.log('Class filter:', JSON.stringify(classFilter));
+    
+    const classes = await this.classModel.find(classFilter).select('_id').exec();
+    const classIds = classes.map(c => c._id);
+    
+    console.log('Classes found for school:', classIds.length);
+    console.log('Class IDs:', classIds);
+    
+    if (classIds.length === 0) {
+      return {
+        students: [],
+        pagination: { page: 1, limit: limit, total: 0, pages: 0 },
+      };
+    }
 
-    // On ne filtre pas par niveau ici, car il est dans la classe de l'élève
-    // On va filtrer après le populate
+    // Étape 2 : Trouver les étudiants de ces classes
+    // Convertir les ObjectId en strings car le champ class est stocké comme string
+    const classIdsAsStrings = classIds.map(id => id.toString());
+    const query: any = { class: { $in: classIdsAsStrings } };
+
+    console.log('Query for students:', JSON.stringify(query));
+    
+    // Debug: vérifier un étudiant pour voir le format de son champ class
+    const sampleStudent = await this.studentModel.findOne({}).exec();
+    if (sampleStudent) {
+      console.log('Sample student class field:', sampleStudent.class, 'Type:', typeof sampleStudent.class);
+    }
+    
+    // Compter le total
+    const total = await this.studentModel.countDocuments(query);
+    console.log('Total students found:', total);
+
+    // Récupérer les étudiants avec pagination
     const studentsRaw = await this.studentModel
       .find(query)
       .populate({ path: 'class', model: 'Class' })
@@ -204,22 +242,10 @@ export class ClassService {
       .limit(limit)
       .exec();
 
-    // Filtrage par niveau si demandé
-    let students = studentsRaw;
-    if (options?.niveau) {
-      students = studentsRaw.filter(
-        (s) => s.class && (s.class as any).level === options.niveau,
-      );
-    }
+    console.log('Students returned:', studentsRaw.length);
 
-    // Pour la pagination correcte, on doit aussi compter le total filtré
-    let total = await this.studentModel.countDocuments(query);
-    if (options?.niveau) {
-      // Compte le total filtré
-      total = studentsRaw.filter(
-        (s) => s.class && (s.class as any).level === options.niveau,
-      ).length;
-    }
+    // Le filtrage par niveau est déjà fait au niveau de la requête des classes
+    const students = studentsRaw;
 
     return {
       students,

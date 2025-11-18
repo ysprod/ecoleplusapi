@@ -8,6 +8,7 @@ import {
   Patch,
   Delete,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { ClassService } from './class.service';
 import { CreateClassDto } from './dto/create-class.dto';
@@ -41,6 +42,8 @@ export class ClassController {
     @Query('limit') limit?: number,
   ) {
     const options: any = { page, limit, niveau };
+        console.log('Fetching students with options:', schoolId);
+    console.log('Fetching students with options:', options);
     return await this.classService.getSchoolStudents(schoolId, options);
   }
 
@@ -73,6 +76,24 @@ export class ClassController {
     @GetUser() user: User,
   ): Promise<ClassResponseDto> {
     return this.classService.update(id, updateClassDto, user._id.toString());
+  }
+
+  /**
+   * Assigne un éducateur à une classe
+   * PATCH /classes
+   * Body: { classId: string, educatorId: string }
+   */
+  @Patch()
+  async assignEducatorByBody(
+    @Body()
+    body: { classId?: string; educatorId?: string },
+  ): Promise<ClassResponseDto> {
+    const { classId, educatorId } = body || {};
+    console.log('Assigning educator with body:', body);
+    if (!classId || !educatorId) {
+      throw new BadRequestException('classId and educatorId are required');
+    }
+    return this.classService.assignEducator(classId, educatorId);
   }
 
   @Delete(':id')

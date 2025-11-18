@@ -96,6 +96,75 @@ export class AuthController {
     return { ok: true, email };
   }
 
+  @Post('admin/seed-founder')
+  @ApiOperation({ summary: 'Admin - Créer ou réinitialiser le compte fondateur' })
+  @ApiResponse({ status: 200, description: 'Compte fondateur créé/réinitialisé' })
+  @ApiResponse({ status: 401, description: 'Token admin invalide' })
+  async adminSeedFounder(
+    @Body()
+    body: { 
+      email?: string; 
+      password?: string;
+      firstName?: string;
+      lastName?: string;
+      token?: string 
+    },
+    @Headers('x-admin-token') headerToken?: string,
+  ) {
+    const adminToken = body?.token || headerToken;
+    if (!adminToken || adminToken !== process.env.ADMIN_RESET_TOKEN) {
+      throw new UnauthorizedException('Invalid admin token');
+    }
+
+    const email = (body?.email || 'fondateur@ecoleplus.ci').toLowerCase().trim();
+    const password = body?.password || 'Fondateur2024!';
+    const firstName = body?.firstName || 'FONDATEUR';
+    const lastName = body?.lastName || 'ECOLEPLUS';
+
+    if (password.length < 8) {
+      throw new BadRequestException('Le mot de passe doit contenir au moins 8 caractères');
+    }
+
+    // Vérifier si l'utilisateur existe déjà
+    let user = await this.userService.findRawByEmail(email);
+    
+    if (user) {
+      // Réinitialiser le mot de passe
+      const newHash = await bcrypt.hash(password, 10);
+      (user as any).password = newHash;
+      (user as any).firstName = firstName;
+      (user as any).lastName = lastName;
+      (user as any).role = 'admin';
+      (user as any).profileType = 'founder';
+      await (user as any).save();
+      
+      return { 
+        ok: true, 
+        action: 'updated',
+        email,
+        message: 'Compte fondateur réinitialisé avec succès'
+      };
+    } else {
+      // Créer un nouveau compte
+      const newUser = await this.userService.create({
+        email,
+        password,
+        firstName,
+        lastName,
+        role: 'admin',
+        profileType: 'founder',
+      });
+      
+      return { 
+        ok: true, 
+        action: 'created',
+        email,
+        userId: newUser.id,
+        message: 'Compte fondateur créé avec succès'
+      };
+    }
+  }
+
   @Post('debug/check-user')
   @ApiOperation({ summary: 'Debug - Vérifier si un utilisateur existe' })
   async debugCheckUser(@Body() body: { email: string }) {

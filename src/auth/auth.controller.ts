@@ -103,10 +103,14 @@ export class AuthController {
     try {
       const user = await this.userService.findRawByEmail(normalizedEmail);
       if (!user) {
+        const sample = await this.userService.listUserEmails(20);
         return { 
           found: false, 
           email: normalizedEmail,
-          message: 'User not found in database'
+          message: 'User not found in database',
+          sampleTotal: sample.total,
+          sampleUsers: sample.users,
+          dbName: process.env.MONGODB_DB || 'default',
         };
       }
       const hasPassword = !!(user as any).password;
@@ -122,12 +126,14 @@ export class AuthController {
         passwordLength,
         isBcryptHash: isBcrypt,
         userId: (user as any)._id?.toString(),
+        dbName: process.env.MONGODB_DB || 'default',
       };
     } catch (error) {
       return {
         found: false,
         email: normalizedEmail,
         error: error.message,
+        dbName: process.env.MONGODB_DB || 'default',
       };
     }
   }

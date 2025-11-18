@@ -204,7 +204,16 @@ export class UserService {
   async findRawByEmail(email: string): Promise<UserDocument | null> {
     const normalizedEmail = email.toLowerCase().trim();
     console.log('[findRawByEmail] Searching for:', normalizedEmail);
-    const result = await this.userModel.findOne({ email: normalizedEmail }).exec();
+    let result = await this.userModel.findOne({ email: normalizedEmail }).exec();
+    if (!result) {
+      // Fallback case-insensitive search to detect odd casing/whitespace issues
+      const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const rx = new RegExp('^' + escapeRegExp(normalizedEmail) + '$', 'i');
+      result = await this.userModel.findOne({ email: rx }).exec();
+      if (result) {
+        console.warn('[findRawByEmail] Case-insensitive match found for:', normalizedEmail, '-> stored:', result.email);
+      }
+    }
     console.log('[findRawByEmail] Found:', result ? 'YES' : 'NO', result?._id?.toString());
     return result;
   }
@@ -217,12 +226,30 @@ export class UserService {
   ): Promise<UserDocument | null> {
     const normalizedEmail = email.toLowerCase().trim();
     console.log('[findRawByEmailWithPassword] Searching for:', normalizedEmail);
-    const result = await this.userModel
+    let result = await this.userModel
       .findOne({ email: normalizedEmail })
       .select('+password')
       .exec();
+    if (!result) {
+      const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const rx = new RegExp('^' + escapeRegExp(normalizedEmail) + '$', 'i');
+      result = await this.userModel
+        .findOne({ email: rx })
+        .select('+password')
+        .exec();
+      if (result) {
+        console.warn('[findRawByEmailWithPassword] Case-insensitive match found for:', normalizedEmail, '-> stored:', result.email);
+      }
+    }
     console.log('[findRawByEmailWithPassword] Found:', result ? 'YES' : 'NO', result?._id?.toString());
     return result;
+  }
+
+  async listUserEmails(limit = 20): Promise<{ total: number; users: Array<{ id: string; email: string }> }> {
+    const total = await this.userModel.countDocuments({}).exec();
+    const docs = await this.userModel.find({}, { email: 1 }).limit(limit).exec();
+    const users = docs.map((u) => ({ id: u._id.toString(), email: u.email }));
+    return { total, users };
   }
 
   /**

@@ -125,8 +125,8 @@ export class AuthController {
       throw new BadRequestException('Le mot de passe doit contenir au moins 8 caractères');
     }
 
-    // Vérifier si l'utilisateur existe déjà
-    let user = await this.userService.findRawByEmail(email);
+    // Vérifier si l'utilisateur existe déjà (avec le mot de passe pour pouvoir le modifier)
+    let user = await this.userService.findRawByEmailWithPassword(email);
     
     if (user) {
       // Réinitialiser le mot de passe
@@ -170,7 +170,8 @@ export class AuthController {
   async debugCheckUser(@Body() body: { email: string }) {
     const normalizedEmail = (body?.email || '').toLowerCase().trim();
     try {
-      const user = await this.userService.findRawByEmail(normalizedEmail);
+      // Utiliser findRawByEmailWithPassword pour inclure le champ password
+      const user = await this.userService.findRawByEmailWithPassword(normalizedEmail);
       if (!user) {
         const sample = await this.userService.listUserEmails(20);
         return { 

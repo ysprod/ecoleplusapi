@@ -42,8 +42,6 @@ export class ClassController {
     @Query('limit') limit?: number,
   ) {
     const options: any = { page, limit, niveau };
-        console.log('Fetching students with options:', schoolId);
-    console.log('Fetching students with options:', options);
     return await this.classService.getSchoolStudents(schoolId, options);
   }
 
@@ -89,7 +87,6 @@ export class ClassController {
     body: { classId?: string; educatorId?: string },
   ): Promise<ClassResponseDto> {
     const { classId, educatorId } = body || {};
-    console.log('Assigning educator with body:', body);
     if (!classId || !educatorId) {
       throw new BadRequestException('classId and educatorId are required');
     }

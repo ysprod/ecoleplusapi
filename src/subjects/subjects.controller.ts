@@ -23,7 +23,6 @@ export class SubjectsController {
 
   @Post()
   async create(@Body() createSubjectDto: CreateSubjectDto) {
-    console.log("Creating subject with data:", createSubjectDto);
     try {
       this.logger.log('Creating subject with data:', JSON.stringify(createSubjectDto));
       return await this.subjectsService.create(createSubjectDto);

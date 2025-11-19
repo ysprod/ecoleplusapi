@@ -44,7 +44,6 @@ export class ParentController {
   async getChildrenByUserId(
     @Param('userId') userId: string,
   ): Promise<StudentResponseDto[]> {
-    console.log('Fetching children for userId:', userId);
     return this.parentService.getChildrenByUserId(userId);
   }
 

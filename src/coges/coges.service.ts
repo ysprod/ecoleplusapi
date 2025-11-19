@@ -165,12 +165,9 @@ export class CogesService {
 
   async findByParentId(parentId: string) {
     if (!Types.ObjectId.isValid(parentId)) {
-      console.log('[findByParentId] Invalid parentId:', parentId);
       return [];
     }
-    const pid = new Types.ObjectId(parentId);
-    console.log('[findByParentId] Searching COGES for parentId:', parentId);
-    
+    const pid = new Types.ObjectId(parentId);    
     const result = await this.cogesModel
       .find({
         $or: [
@@ -186,8 +183,6 @@ export class CogesService {
       .populate({ path: 'treasurer', populate: { path: 'user', model: 'User' } })
       .populate({ path: 'secretary', populate: { path: 'user', model: 'User' } })
       .exec();
-      
-    console.log('[findByParentId] Query result:', result.length, 'COGES found');
-    return result;
+          return result;
   }
 }

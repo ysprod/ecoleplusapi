@@ -28,8 +28,7 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Identifiants invalides' })
   async login(@Body() loginDto: LoginDto) {
     try {
-      console.log('🔐 Login attempt:', { email: loginDto.email });
-      
+       
       const user = await this.authService.validateUser(
         loginDto.email,
         loginDto.password,
@@ -41,7 +40,6 @@ export class AuthController {
       }
 
       const tokens = this.authService.generateTokens(user);
-      console.log('✅ Login successful:', loginDto.email);
       
       return { ...tokens, user };
     } catch (error) {

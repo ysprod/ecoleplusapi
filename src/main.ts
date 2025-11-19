@@ -1,56 +1,13 @@
-import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { UserService } from './user/user.service';
-import * as bcrypt from 'bcryptjs';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
-  console.log('ENV JWT_SECRET present?', !!process.env.JWT_SECRET);
   app.useGlobalFilters(new HttpExceptionFilter());
-  // Optional bootstrap seeding for an admin/demo account
-  try {
-    const seedEmail = process.env.SEED_ADMIN_EMAIL;
-    const seedPassword = process.env.SEED_ADMIN_PASSWORD;
-    if (seedEmail && seedPassword && seedPassword.length >= 8) {
-      const userService = app.get(UserService);
-      const existing = await userService.findRawByEmail(seedEmail);
-      if (existing) {
-        const currentHash = (existing as any).password;
-        let needsUpdate = true;
-        try {
-          if (currentHash) {
-            needsUpdate = !(await bcrypt.compare(seedPassword, currentHash));
-          }
-        } catch {
-          needsUpdate = true;
-        }
-        if (needsUpdate) {
-          const newHash = await bcrypt.hash(seedPassword, 10);
-          (existing as any).password = newHash;
-          await (existing as any).save();
-          console.log(`🔑 Seed: password updated for ${seedEmail}`);
-        } else {
-          console.log(`🔑 Seed: password already up-to-date for ${seedEmail}`);
-        }
-      } else {
-        await (app.get(UserService) as UserService).create({
-          email: seedEmail.toLowerCase(),
-          firstName: 'ADMIN',
-          lastName: 'SEED',
-          password: seedPassword,
-          role: 'admin',
-          profileType: 'founder',
-        } as any);
-        console.log(`👤 Seed: admin user created for ${seedEmail}`);
-      }
-    }
-  } catch (e) {
-    console.warn('Seed error (ignored):', e?.message || e);
-  }
 
   const envOrigins = (process.env.ALLOWED_ORIGINS || '')
     .split(',')
@@ -65,22 +22,14 @@ async function bootstrap() {
     'https://ecoleplus-3464u432f-yaya-sidibes-projects.vercel.app', // Production actuelle
   ];
   const allowedOrigins = envOrigins.length ? envOrigins : defaultOrigins;
-  
-  console.log('🌐 CORS Configuration:', {
-    envOrigins: envOrigins.length > 0 ? envOrigins : 'using defaults',
-    allowedOrigins: allowedOrigins.slice(0, 3),
-    totalOrigins: allowedOrigins.length
-  });
 
   app.enableCors({
     origin: (origin, callback) => {
-      console.log('🔍 CORS check for origin:', origin || 'no-origin (likely Postman/curl)');
-      
+
       if (!origin) return callback(null, true); // Allow non-browser clients (Postman, curl)
 
       // Vérifier les origines exactes
       if (allowedOrigins.includes(origin)) {
-        console.log('✅ CORS allowed (exact match):', origin);
         return callback(null, true);
       }
 
@@ -94,12 +43,11 @@ async function bootstrap() {
       const isAllowed = allowedPatterns.some((pattern) =>
         pattern.test(origin || ''),
       );
-      
+
       if (isAllowed) {
-        console.log('✅ CORS allowed (pattern match):', origin);
         return callback(null, true);
       }
-      
+
       console.warn('❌ CORS blocked:', origin);
       return callback(new Error('Not allowed by CORS'));
     },
@@ -171,30 +119,6 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3001;
   await app.listen(port);
-  const connection = app.get('DatabaseConnection'); // ou InjectConnection
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('📊 DATABASE INFO');
-  console.log('Connected:', connection.readyState === 1);
-  console.log('Database Name:', connection.name);
-  console.log('Host:', connection.host);
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  
-  // Test de query
-  try {
-    const User = connection.model('User');
-    const count = await User.countDocuments();
-    console.log('👥 Total users in database:', count);
-    
-    const testUser = await User.findOne({ email: 'academai@ecoleplus.ci' });
-    console.log('🔍 Test user found:', !!testUser);
-    if (testUser) {
-      console.log('   Email:', testUser.email);
-      console.log('   Name:', testUser.firstName, testUser.lastName);
-    }
-  } catch (e) {
-    console.error('❌ Query test failed:', e.message);
-  }
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log(`🚀 Application is running on: http://localhost:${port}`);
   console.log(`📚 Swagger docs available at: http://localhost:${port}/api/docs`);
 }

@@ -160,7 +160,6 @@ export class TeacherService {
     }
 
     const enseignant = this.mapToResponseDto(teacher);
-    console.log('Enseignant trouvé par matricule:', enseignant);
     return enseignant;
   }
 

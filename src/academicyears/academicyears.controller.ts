@@ -26,7 +26,6 @@ export class AcademicYearsController {
   async listAll(@Query('user') userId?: string) {
     const academicYears =
       await this.academicYearsService.getAcademicYearsWithSchools(userId);
-    console.log('📚 Retrieved academic years:', JSON.stringify(academicYears, null, 2));
     return {
       success: true,
       hasData: academicYears.length > 0,

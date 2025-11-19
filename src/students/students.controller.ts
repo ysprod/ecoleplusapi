@@ -47,7 +47,6 @@ export class StudentsController {
   async create(
     @Body() createStudentDto: CreateStudentDto,
   ): Promise<StudentResponseDto> {
-    console.log('Creating student with data:', createStudentDto);
     try {
       return await this.studentsService.create(createStudentDto);
     } catch (err) {
@@ -83,7 +82,6 @@ export class StudentsController {
   async verifyStudent(
     @Query('id') id: string,
   ): Promise<{ data: StudentResponseDto | null }> {
-    console.log('Verifying student with user ID:', id);
     Logger.log(`ID reçu pour vérification : ${id}`, 'StudentsController');
     if (!id || !id.trim()) {
       throw new NotFoundException('User ID is required');

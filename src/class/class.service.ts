@@ -186,7 +186,6 @@ export class ClassService {
   ) {
     // Vérifie la validité de l'id
     if (!schoolId || !Types.ObjectId.isValid(schoolId)) {
-      console.log('Invalid schoolId:', schoolId);
       return {
         students: [],
         pagination: { page: 1, limit: 10, total: 0, pages: 0 },
@@ -202,13 +201,11 @@ export class ClassService {
       classFilter.level = options.niveau;
     }
     
-    console.log('Class filter:', JSON.stringify(classFilter));
     
     const classes = await this.classModel.find(classFilter).select('_id').exec();
     const classIds = classes.map(c => c._id);
     
-    console.log('Classes found for school:', classIds.length);
-    console.log('Class IDs:', classIds);
+   
     
     if (classIds.length === 0) {
       return {
@@ -222,17 +219,13 @@ export class ClassService {
     const classIdsAsStrings = classIds.map(id => id.toString());
     const query: any = { class: { $in: classIdsAsStrings } };
 
-    console.log('Query for students:', JSON.stringify(query));
     
     // Debug: vérifier un étudiant pour voir le format de son champ class
     const sampleStudent = await this.studentModel.findOne({}).exec();
-    if (sampleStudent) {
-      console.log('Sample student class field:', sampleStudent.class, 'Type:', typeof sampleStudent.class);
-    }
+    
     
     // Compter le total
     const total = await this.studentModel.countDocuments(query);
-    console.log('Total students found:', total);
 
     // Récupérer les étudiants avec pagination
     const studentsRaw = await this.studentModel
@@ -242,7 +235,6 @@ export class ClassService {
       .limit(limit)
       .exec();
 
-    console.log('Students returned:', studentsRaw.length);
 
     // Le filtrage par niveau est déjà fait au niveau de la requête des classes
     const students = studentsRaw;

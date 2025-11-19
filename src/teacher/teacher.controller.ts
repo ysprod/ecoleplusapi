@@ -109,7 +109,6 @@ export class TeacherController {
     @Param('id') id: string,
     @Query('schoolId') schoolId?: string,
   ): Promise<{ data: SubjectsResponseDto[] }> {
-    console.log(`Fetching subjects for user ID: ${id} and school ID: ${schoolId}`);
     // Ici, l'id reçu correspond à l'identifiant de l'utilisateur lié à l'enseignant
     const teacher = await this.teacherService.findByUserId(id);
     // Filter subjects by school if schoolId is provided

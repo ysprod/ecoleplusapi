@@ -252,22 +252,15 @@ export class ParentService {
     if (!Types.ObjectId.isValid(userId)) {
       throw new NotFoundException('User not found');
     }
-    console.log('[getCogesByUserId] Looking for parent with userId:', userId);
     
     const parent = await this.parentModel.findOne({ user: userId }).exec();
     
     if (!parent) {
-      console.log('[getCogesByUserId] No parent found for userId:', userId);
       return [];
     }
     
-    console.log('[getCogesByUserId] Parent found:', {
-      parentId: parent._id.toString(),
-      userId: parent.user.toString(),
-    });
     
     const coges = await this.cogesService.findByParentId(parent._id.toString());
-    console.log('[getCogesByUserId] COGES found:', coges.length, 'document(s)');
     
     return coges;
   }
